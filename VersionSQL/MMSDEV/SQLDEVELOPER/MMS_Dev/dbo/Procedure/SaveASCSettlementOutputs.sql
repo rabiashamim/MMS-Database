@@ -1,0 +1,795 @@
+﻿/****** Object:  Procedure [dbo].[SaveASCSettlementOutputs]    Committed by VersionSQL https://www.versionsql.com ******/
+
+CREATE   Procedure [dbo].[SaveASCSettlementOutputs]
+
+	@StatementProcessId decimal(18,0),
+	@Month int,
+	@Year INT		
+as
+begin
+
+	----------- [dbo].[AscStatementDataCdpGuParty_SettlementProcess] ----------
+
+	DECLARE @BmeStatementProcessId decimal(18,0) = null;
+	SELECT top 1 @BmeStatementProcessId = dbo.[GetBMEtatementProcessIdFromASC] (@StatementProcessId);
+--SELECT top 1 
+--	@BmeStatementProcessId = MtStatementProcess_ID 
+--FROM 
+--	MtStatementProcess SP 
+--WHERE 
+--	SP.LuAccountingMonth_Id_Current IN(SELECT TOP 1 SP.LuAccountingMonth_Id_Current FROM MtStatementProcess SP WHERE SP.MtStatementProcess_ID=@StatementProcessId)
+--	AND SP.SrProcessDef_ID=1 
+--	AND sP.MtStatementProcess_IsDeleted=0;
+
+   IF NOT EXISTS(SELECT TOP 1 AscStatementData_Id FROM AscStatementDataGuHourly_SettlementProcess asdghsp WHERE  AscStatementData_Year=@Year and AscStatementData_Month=@Month and AscStatementData_StatementProcessId=@StatementProcessId)
+   BEGIN
+
+	INSERT INTO [dbo].[BmeStatementDataMpCategoryHourly_SettlementProcess]
+	(
+		[BmeStatementData_NtdcDateTime],
+		[BmeStatementData_Year],
+		[BmeStatementData_Month],
+		[BmeStatementData_Day],
+		[BmeStatementData_Hour],
+		[BmeStatementData_AdjustedEnergy],
+		[BmeStatementData_TransmissionLosses],
+		[BmeStatementData_DemandedEnergy],
+		[BmeStatementData_UpliftTransmissionLosses],
+		[BmeStatementData_ActualEnergy],
+		[BmeStatementData_EnergySuppliedActual],
+		[BmeStatementData_EnergySuppliedGenerated],
+		[BmeStatementData_EnergySuppliedImport],
+		[BmeStatementData_PartyRegisteration_Id],
+		[BmeStatementData_PartyName],
+		[BmeStatementData_PartyType_Code],
+		[BmeStatementData_PartyCategory_Code],
+		[BmeStatementData_AdjustedEnergyImport],
+		[BmeStatementData_AdjustedEnergyExport],
+		[BmeStatementData_EnergySuppliedGeneratedLegacy],
+		[BmeStatementData_EnergySuppliedImportedLegacy],
+		[BmeStatementData_CAPLegacy],
+		[BmeStatementData_EnergySuppliedImported],
+		[BmeStatementData_ActualCapacity],
+		[BmeStatementData_EnergyTradedBought],
+		[BmeStatementData_EnergyTradedSold],
+		[BmeStatementData_EnergyTraded],
+		[BmeStatementData_Imbalance],
+		[BmeStatementData_ImbalanceCharges],
+		[BmeStatementData_MarginalPrice],
+		[BmeStatementData_BSUPRatioPP],
+		[BmeStatementData_IsPowerPool],
+		[BmeStatementData_CongestedZoneID],
+        [BmeStatementData_CongestedZone],
+		[BmeStatementData_ES],
+		[BmeStatementData_MAC],
+		[BmeStatementData_IG_AC],
+		[BmeStatementData_RG_AC],
+		[BmeStatementData_GS_SC],
+		[BmeStatementData_GBS_BSC],
+		[BmeStatementData_TAC],
+		[BmeStatementData_MRC],
+		[BmeStatementData_TC],
+		[BmeStatementData_StatementProcessId],
+		[BmeStatementData_SettlementProcessId]
+	)
+	SELECT
+		[BmeStatementData_NtdcDateTime],
+		[BmeStatementData_Year],
+		[BmeStatementData_Month],
+		[BmeStatementData_Day],
+		[BmeStatementData_Hour],
+		[BmeStatementData_AdjustedEnergy],
+		[BmeStatementData_TransmissionLosses],
+		[BmeStatementData_DemandedEnergy],
+		[BmeStatementData_UpliftTransmissionLosses],
+		[BmeStatementData_ActualEnergy],
+		[BmeStatementData_EnergySuppliedActual],
+		[BmeStatementData_EnergySuppliedGenerated],
+		[BmeStatementData_EnergySuppliedImport],
+		[BmeStatementData_PartyRegisteration_Id],
+		[BmeStatementData_PartyName],
+		[BmeStatementData_PartyType_Code],
+		[BmeStatementData_PartyCategory_Code],
+		[BmeStatementData_AdjustedEnergyImport],
+		[BmeStatementData_AdjustedEnergyExport],
+		[BmeStatementData_EnergySuppliedGeneratedLegacy],
+		[BmeStatementData_EnergySuppliedImportedLegacy],
+		[BmeStatementData_CAPLegacy],
+		[BmeStatementData_EnergySuppliedImported],
+		[BmeStatementData_ActualCapacity],
+		[BmeStatementData_EnergyTradedBought],
+		[BmeStatementData_EnergyTradedSold],
+		[BmeStatementData_EnergyTraded],
+		[BmeStatementData_Imbalance],
+		[BmeStatementData_ImbalanceCharges],
+		[BmeStatementData_MarginalPrice],
+		[BmeStatementData_BSUPRatioPP],
+		[BmeStatementData_IsPowerPool],
+		[BmeStatementData_CongestedZoneID],
+        [BmeStatementData_CongestedZone],
+		[BmeStatementData_ES],
+		[BmeStatementData_MAC],
+		[BmeStatementData_IG_AC],
+		[BmeStatementData_RG_AC],
+		[BmeStatementData_GS_SC],
+		[BmeStatementData_GBS_BSC],
+		[BmeStatementData_TAC],
+		[BmeStatementData_MRC],
+		[BmeStatementData_TC],
+		[BmeStatementData_StatementProcessId],
+		@BmeStatementProcessId
+	FROM 
+		BmeStatementDataMpCategoryHourly
+	WHERE
+		BmeStatementData_Year = @Year
+		AND BmeStatementData_Month = @Month
+		AND BmeStatementData_StatementProcessId=@BmeStatementProcessId
+------ [dbo].[BmeStatementDataMpCategoryMonthly_SettlementProcess]
+	INSERT INTO [dbo].[BmeStatementDataMpCategoryMonthly_SettlementProcess]
+	(
+		[BmeStatementData_Year],
+		[BmeStatementData_Month],
+		[BmeStatementData_EnergySuppliedActual],
+		[BmeStatementData_PartyRegisteration_Id],
+		[BmeStatementData_PartyName],
+		[BmeStatementData_PartyType_Code],
+		[BmeStatementData_PartyCategory_Code],
+		[BmeStatementData_IsPowerPool],
+		[BmeStatementData_CongestedZoneID],
+        [BmeStatementData_CongestedZone],
+		[BmeStatementData_ES],
+		[BmeStatementData_MAC],
+		[BmeStatementData_IG_AC],
+		[BmeStatementData_RG_AC],
+		[BmeStatementData_GS_SC],
+		[BmeStatementData_GBS_BSC],
+		[BmeStatementData_TAC],
+		[BmeStatementData_MRC],
+		[BmeStatementData_TC],
+		[BmeStatementData_StatementProcessId],
+		[BmeStatementData_SettlementProcessId]
+	)
+	SELECT
+		[BmeStatementData_Year],
+		[BmeStatementData_Month],
+		[BmeStatementData_EnergySuppliedActual],
+		[BmeStatementData_PartyRegisteration_Id],
+		[BmeStatementData_PartyName],
+		[BmeStatementData_PartyType_Code],
+		[BmeStatementData_PartyCategory_Code],
+		[BmeStatementData_IsPowerPool],
+		[BmeStatementData_CongestedZoneID],
+        [BmeStatementData_CongestedZone],
+		[BmeStatementData_ES],
+		[BmeStatementData_MAC],
+		[BmeStatementData_IG_AC],
+		[BmeStatementData_RG_AC],
+		[BmeStatementData_GS_SC],
+		[BmeStatementData_GBS_BSC],
+		[BmeStatementData_TAC],
+		[BmeStatementData_MRC],
+		[BmeStatementData_TC],
+		[BmeStatementData_StatementProcessId],
+		@BmeStatementProcessId
+	FROM 
+		BmeStatementDataMpCategoryMonthly
+	WHERE
+		BmeStatementData_Year = @Year
+		AND BmeStatementData_Month = @Month
+		AND BmeStatementData_StatementProcessId=@BmeStatementProcessId
+
+INSERT INTO [dbo].[AscStatementDataCdpGuParty_SettlementProcess]
+(
+	[AscStatementData_GuPartyRegisteration_Id]
+	,[AscStatementData_GuPartyRegisteration_Name]
+	,[AscStatementData_GuPartyCategory_Code]
+	,[AscStatementData_GuPartyType_Code]
+	,[AscStatementData_CdpId]
+	,[AscStatementData_FromPartyRegisteration_Id]
+	,[AscStatementData_FromPartyRegisteration_Name]
+	,[AscStatementData_FromPartyCategory_Code]
+	,[AscStatementData_FromPartyType_Code]
+	,[AscStatementData_ToPartyRegisteration_Id]
+	,[AscStatementData_ToPartyRegisteration_Name]
+	,[AscStatementData_ToPartyCategory_Code]
+	,[AscStatementData_ToPartyType_Code]
+	,[AscStatementData_ISARE]
+	,[AscStatementData_ISThermal]
+	,[AscStatementData_RuCDPDetail_Id]
+	,[AscStatementData_IsLegacy]
+	,[AscStatementData_IsEnergyImported]
+	,[AscStatementData_IsPowerPool]
+	,[AscStatementData_GenerationUnit_Id]
+	,[AscStatementData_Generator_Id]
+	,[AscStatementData_SOUnitId]
+	,[AscStatementData_StatementProcessId]
+	,[AscStatementData_SettlementProcessId]
+)
+
+SELECT
+
+	[AscStatementData_GuPartyRegisteration_Id]
+	,[AscStatementData_GuPartyRegisteration_Name]
+	,[AscStatementData_GuPartyCategory_Code]
+	,[AscStatementData_GuPartyType_Code]
+	,[AscStatementData_CdpId]
+	,[AscStatementData_FromPartyRegisteration_Id]
+	,[AscStatementData_FromPartyRegisteration_Name]
+	,[AscStatementData_FromPartyCategory_Code]
+	,[AscStatementData_FromPartyType_Code]
+	,[AscStatementData_ToPartyRegisteration_Id]
+	,[AscStatementData_ToPartyRegisteration_Name]
+	,[AscStatementData_ToPartyCategory_Code]
+	,[AscStatementData_ToPartyType_Code]
+	,[AscStatementData_ISARE]
+	,[AscStatementData_ISThermal]
+	,[AscStatementData_RuCDPDetail_Id]
+	,[AscStatementData_IsLegacy]
+	,[AscStatementData_IsEnergyImported]
+	,[AscStatementData_IsPowerPool]
+	,[AscStatementData_GenerationUnit_Id]
+	,[AscStatementData_Generator_Id]
+	,[AscStatementData_SOUnitId]
+	,[AscStatementData_StatementProcessId]
+	,@StatementProcessId
+ FROM 
+	[dbo].[AscStatementDataCdpGuParty]
+WHERE
+	 AscStatementData_StatementProcessId=@StatementProcessId
+
+	-----------[dbo].[AscStatementDataGenMonthly_SettlementProcess] -------------
+INSERT INTO [dbo].[AscStatementDataGenMonthly_SettlementProcess]
+(
+	[AscStatementData_Year]
+	,[AscStatementData_Month]
+	,[AscStatementData_Generator_Id]
+	,[AscStatementData_PartyRegisteration_Id]
+	,[AscStatementData_PartyRegisteration_Name]
+	,[AscStatementData_PartyCategory_Code]
+	,[AscStatementData_PartyType_Code]
+	,[AscStatementData_Congestion_Zone]
+	,[AscStatementData_SO_MP]
+	,[AscStatementData_SO_AC]
+	,[AscStatementData_SO_AC_ASC]
+	,[AscStatementData_SO_MR_EP]
+	,[AscStatementData_SO_MR_VC]
+	,[AscStatementData_SO_RG_VC]
+	,[AscStatementData_SO_RG_EG_ARE]
+	,[AscStatementData_SO_IG_VC]
+	,[AscStatementData_SO_IG_EPG]
+	,[AscStatementData_MR_EAG]
+	,[AscStatementData_MR_EPG]
+	,[AscStatementData_MRC]
+	,[AscStatementData_RG_EAG]
+	,[AscStatementData_AC_MOD]
+	,[AscStatementData_RG_LOCC]
+	,[AscStatementData_IG_EAG]
+	,[AscStatementData_IG_EPG]
+	,[AscStatementData_IG_UPC]
+	,[AscStatementData_AC_Total]
+	,[AscStatementData_MtPartyCategory_Id]
+	,[AscStatementData_TaxZoneID]
+	,[AscStatementData_CongestedZoneID]
+    ,[AscStatementData_CongestedZone]
+	,[AscStatementData_SO_RG_UT]
+	,[AscStatementData_SC_BSC]
+	,[AscStatementData_MAC]
+	,[AscStatementData_TAC]
+	,[AscStatementData_RG_AC]
+	,[AscStatementData_IG_AC]
+	,[AscStatementData_GS_SC]
+	,[AscStatementData_GBS_BSC]
+	,[AscStatementData_MR_UPC]
+	,[AscStatementData_StatementProcessId]
+	,[AscStatementData_SettlementProcessId]
+)
+
+SELECT 
+
+	[AscStatementData_Year]
+	,[AscStatementData_Month]
+	,[AscStatementData_Generator_Id]
+	,[AscStatementData_PartyRegisteration_Id]
+	,[AscStatementData_PartyRegisteration_Name]
+	,[AscStatementData_PartyCategory_Code]
+	,[AscStatementData_PartyType_Code]
+	,[AscStatementData_Congestion_Zone]
+	,[AscStatementData_SO_MP]
+	,[AscStatementData_SO_AC]
+	,[AscStatementData_SO_AC_ASC]
+	,[AscStatementData_SO_MR_EP]
+	,[AscStatementData_SO_MR_VC]
+	,[AscStatementData_SO_RG_VC]
+	,[AscStatementData_SO_RG_EG_ARE]
+	,[AscStatementData_SO_IG_VC]
+	,[AscStatementData_SO_IG_EPG]
+	,[AscStatementData_MR_EAG]
+	,[AscStatementData_MR_EPG]
+	,[AscStatementData_MRC]
+	,[AscStatementData_RG_EAG]
+	,[AscStatementData_AC_MOD]
+	,[AscStatementData_RG_LOCC]
+	,[AscStatementData_IG_EAG]
+	,[AscStatementData_IG_EPG]
+	,[AscStatementData_IG_UPC]
+	,[AscStatementData_AC_Total]
+	,[AscStatementData_MtPartyCategory_Id]
+	,[AscStatementData_TaxZoneID]
+		,[AscStatementData_CongestedZoneID]
+    ,[AscStatementData_CongestedZone]
+	,[AscStatementData_SO_RG_UT]
+	,[AscStatementData_SC_BSC]
+	,[AscStatementData_MAC]
+	,[AscStatementData_TAC]
+	,[AscStatementData_RG_AC]
+	,[AscStatementData_IG_AC]
+	,[AscStatementData_GS_SC]
+	,[AscStatementData_GBS_BSC]
+	,[AscStatementData_MR_UPC]
+	,[AscStatementData_StatementProcessId]
+	,@StatementProcessId
+FROM 
+	[dbo].[AscStatementDataGenMonthly]
+WHERE 
+	AscStatementData_Year = @Year
+	AND AscStatementData_Month = @Month
+    AND 	 AscStatementData_StatementProcessId=@StatementProcessId
+
+	----------[dbo].[AscStatementDataGuHourly_SettlementProcess] --------
+INSERT INTO [dbo].[AscStatementDataGuHourly_SettlementProcess]
+(
+
+	[AscStatementData_NtdcDateTime]
+	,[AscStatementData_Year]
+	,[AscStatementData_Month]
+	,[AscStatementData_Day]
+	,[AscStatementData_Hour]
+	,[AscStatementData_GenerationUnit_Id]
+	,[AscStatementData_Generator_Id]
+	,[AscStatementData_TechnologyType_Code]
+	,[AscStatementData_FuelType_Code]
+	,[AscStatementData_UnitNumber]
+	,[AscStatementData_InstalledCapacity_KW]
+	,[AscStatementData_location]
+	,[AscStatementData_IsDisabled]
+	,[AscStatementData_EffectiveFrom]
+	,[AscStatementData_EffectiveTo]
+	,[AscStatementData_ModifiedBy]
+	,[AscStatementData_ModifiedOn]
+	,[AscStatementData_UnitName]
+	,[AscStatementData_SOUnitId]
+	,[AscStatementData_IsEnergyImported]
+	,[AscStatementData_PartyRegisteration_Id]
+	,[AscStatementData_PartyRegisteration_Name]
+	,[AscStatementData_PartyCategory_Code]
+	,[AscStatementData_PartyType_Code]
+	,[AscStatementData_Congestion_Zone]
+	,[AscStatementData_SO_MP]
+	,[AscStatementData_SO_AC]
+	,[AscStatementData_SO_AC_ASC]
+	,[AscStatementData_SO_MR_EP]
+	,[AscStatementData_SO_MR_VC]
+	,[AscStatementData_SO_RG_VC]
+	,[AscStatementData_SO_RG_EG_ARE]
+	,[AscStatementData_SO_IG_VC]
+	,[AscStatementData_SO_IG_EPG]
+	,[AscStatementData_MR_EAG]
+	,[AscStatementData_MR_EPG]
+	,[AscStatementData_MRC]
+	,[AscStatementData_RG_EAG]
+	,[AscStatementData_AC_MOD]
+	,[AscStatementData_RG_LOCC]
+	,[AscStatementData_IG_EAG]
+	,[AscStatementData_IG_EPG]
+	,[AscStatementData_IG_UPC]
+	,[AscStatementData_AC_Total]
+	,[AscStatementData_MtPartyCategory_Id]
+	,[AscStatementData_TaxZoneID]
+		,[AscStatementData_CongestedZoneID]
+    ,[AscStatementData_CongestedZone]
+	,[AscStatementData_SO_RG_UT]
+	,[AscStatementData_IsIG]
+	,[AscStatementData_IsRG]
+	,[AscStatementData_IsGenMR]
+	,[AscStatementData_IsGenBS]
+	,[AscStatementData_IsGenS]
+	,[AscStatementData_RG_AC]
+	,[AscStatementData_IG_AC]
+	,[AscStatementData_MR_UPC]
+	,[AscStatementData_StatementProcessId]
+	,[AscStatementData_SettlementProcessId]
+)
+
+SELECT 
+
+	[AscStatementData_NtdcDateTime]
+	,[AscStatementData_Year]
+	,[AscStatementData_Month]
+	,[AscStatementData_Day]
+	,[AscStatementData_Hour]
+	,[AscStatementData_GenerationUnit_Id]
+	,[AscStatementData_Generator_Id]
+	,[AscStatementData_TechnologyType_Code]
+	,[AscStatementData_FuelType_Code]
+	,[AscStatementData_UnitNumber]
+	,[AscStatementData_InstalledCapacity_KW]
+	,[AscStatementData_location]
+	,[AscStatementData_IsDisabled]
+	,[AscStatementData_EffectiveFrom]
+	,[AscStatementData_EffectiveTo]
+	,[AscStatementData_ModifiedBy]
+	,[AscStatementData_ModifiedOn]
+	,[AscStatementData_UnitName]
+	,[AscStatementData_SOUnitId]
+	,[AscStatementData_IsEnergyImported]
+	,[AscStatementData_PartyRegisteration_Id]
+	,[AscStatementData_PartyRegisteration_Name]
+	,[AscStatementData_PartyCategory_Code]
+	,[AscStatementData_PartyType_Code]
+	,[AscStatementData_Congestion_Zone]
+	,[AscStatementData_SO_MP]
+	,[AscStatementData_SO_AC]
+	,[AscStatementData_SO_AC_ASC]
+	,[AscStatementData_SO_MR_EP]
+	,[AscStatementData_SO_MR_VC]
+	,[AscStatementData_SO_RG_VC]
+	,[AscStatementData_SO_RG_EG_ARE]
+	,[AscStatementData_SO_IG_VC]
+	,[AscStatementData_SO_IG_EPG]
+	,[AscStatementData_MR_EAG]
+	,[AscStatementData_MR_EPG]
+	,[AscStatementData_MRC]
+	,[AscStatementData_RG_EAG]
+	,[AscStatementData_AC_MOD]
+	,[AscStatementData_RG_LOCC]
+	,[AscStatementData_IG_EAG]
+	,[AscStatementData_IG_EPG]
+	,[AscStatementData_IG_UPC]
+	,[AscStatementData_AC_Total]
+	,[AscStatementData_MtPartyCategory_Id]
+	,[AscStatementData_TaxZoneID]
+		,[AscStatementData_CongestedZoneID]
+    ,[AscStatementData_CongestedZone]
+	,[AscStatementData_SO_RG_UT]
+	,[AscStatementData_IsIG]
+	,[AscStatementData_IsRG]
+	,[AscStatementData_IsGenMR]
+	,[AscStatementData_IsGenBS]
+	,[AscStatementData_IsGenS]
+	,[AscStatementData_RG_AC]
+	,[AscStatementData_IG_AC]
+	,[AscStatementData_MR_UPC]
+	,[AscStatementData_StatementProcessId]
+	,@StatementProcessId
+FROM 
+	[dbo].[AscStatementDataGuHourly]
+WHERE 
+	AscStatementData_Month = @Month
+	AND AscStatementData_Year = @Year
+	AND 	 AscStatementData_StatementProcessId=@StatementProcessId
+	-------- [dbo].[AscStatementDataGuMonthly_SettlementProcess] -------
+INSERT INTO [dbo].[AscStatementDataGuMonthly_SettlementProcess]
+(
+	[AscStatementData_Year]
+	,[AscStatementData_Month]
+	,[AscStatementData_GenerationUnit_Id]
+	,[AscStatementData_Generator_Id]
+	,[AscStatementData_TechnologyType_Code]
+	,[AscStatementData_FuelType_Code]
+	,[AscStatementData_UnitNumber]
+	,[AscStatementData_InstalledCapacity_KW]
+	,[AscStatementData_location]
+	,[AscStatementData_IsDisabled]
+	,[AscStatementData_EffectiveFrom]
+	,[AscStatementData_EffectiveTo]
+	,[AscStatementData_ModifiedBy]
+	,[AscStatementData_ModifiedOn]
+	,[AscStatementData_UnitName]
+	,[AscStatementData_SOUnitId]
+	,[AscStatementData_IsEnergyImported]
+	,[AscStatementData_PartyRegisteration_Id]
+	,[AscStatementData_PartyRegisteration_Name]
+	,[AscStatementData_PartyCategory_Code]
+	,[AscStatementData_PartyType_Code]
+	,[AscStatementData_Congestion_Zone]
+	,[AscStatementData_SO_MP]
+	,[AscStatementData_SO_AC]
+	,[AscStatementData_SO_AC_ASC]
+	,[AscStatementData_SO_MR_EP]
+	,[AscStatementData_SO_MR_VC]
+	,[AscStatementData_SO_RG_VC]
+	,[AscStatementData_SO_RG_EG_ARE]
+	,[AscStatementData_SO_IG_VC]
+	,[AscStatementData_SO_IG_EPG]
+	,[AscStatementData_MR_EAG]
+	,[AscStatementData_MR_EPG]
+	,[AscStatementData_MRC]
+	,[AscStatementData_RG_EAG]
+	,[AscStatementData_AC_MOD]
+	,[AscStatementData_RG_LOCC]
+	,[AscStatementData_IG_EAG]
+	,[AscStatementData_IG_EPG]
+	,[AscStatementData_IG_UPC]
+	,[AscStatementData_AC_Total]
+	,[AscStatementData_MtPartyCategory_Id]
+	,[AscStatementData_TaxZoneID]
+		,[AscStatementData_CongestedZoneID]
+    ,[AscStatementData_CongestedZone]
+	,[AscStatementData_SO_RG_UT]
+	,[AscStatementData_SC_BSC]
+	,[AscStatementData_MAC]
+	,[AscStatementData_GBS_BSC]
+	,[AscStatementData_GS_NS]
+	,[AscStatementData_GS_SC]
+	,[AscStatementData_IsIG]
+	,[AscStatementData_IsRG]
+	,[AscStatementData_IsGenMR]
+	,[AscStatementData_IsGenBS]
+	,[AscStatementData_IsGenS]
+	,[AscStatementData_RG_AC]
+	,[AscStatementData_IG_AC]
+	,[AscStatementData_MR_UPC]
+	,[AscStatementData_StatementProcessId]
+	,[AscStatementData_SettlementProcessId]
+)
+
+SELECT 
+	[AscStatementData_Year]
+	,[AscStatementData_Month]
+	,[AscStatementData_GenerationUnit_Id]
+	,[AscStatementData_Generator_Id]
+	,[AscStatementData_TechnologyType_Code]
+	,[AscStatementData_FuelType_Code]
+	,[AscStatementData_UnitNumber]
+	,[AscStatementData_InstalledCapacity_KW]
+	,[AscStatementData_location]
+	,[AscStatementData_IsDisabled]
+	,[AscStatementData_EffectiveFrom]
+	,[AscStatementData_EffectiveTo]
+	,[AscStatementData_ModifiedBy]
+	,[AscStatementData_ModifiedOn]
+	,[AscStatementData_UnitName]
+	,[AscStatementData_SOUnitId]
+	,[AscStatementData_IsEnergyImported]
+	,[AscStatementData_PartyRegisteration_Id]
+	,[AscStatementData_PartyRegisteration_Name]
+	,[AscStatementData_PartyCategory_Code]
+	,[AscStatementData_PartyType_Code]
+	,[AscStatementData_Congestion_Zone]
+	,[AscStatementData_SO_MP]
+	,[AscStatementData_SO_AC]
+	,[AscStatementData_SO_AC_ASC]
+	,[AscStatementData_SO_MR_EP]
+	,[AscStatementData_SO_MR_VC]
+	,[AscStatementData_SO_RG_VC]
+	,[AscStatementData_SO_RG_EG_ARE]
+	,[AscStatementData_SO_IG_VC]
+	,[AscStatementData_SO_IG_EPG]
+	,[AscStatementData_MR_EAG]
+	,[AscStatementData_MR_EPG]
+	,[AscStatementData_MRC]
+	,[AscStatementData_RG_EAG]
+	,[AscStatementData_AC_MOD]
+	,[AscStatementData_RG_LOCC]
+	,[AscStatementData_IG_EAG]
+	,[AscStatementData_IG_EPG]
+	,[AscStatementData_IG_UPC]
+	,[AscStatementData_AC_Total]
+	,[AscStatementData_MtPartyCategory_Id]
+	,[AscStatementData_TaxZoneID]
+		,[AscStatementData_CongestedZoneID]
+    ,[AscStatementData_CongestedZone]
+	,[AscStatementData_SO_RG_UT]
+	,[AscStatementData_SC_BSC]
+	,[AscStatementData_MAC]
+	,[AscStatementData_GBS_BSC]
+	,[AscStatementData_GS_NS]
+	,[AscStatementData_GS_SC]
+	,[AscStatementData_IsIG]
+	,[AscStatementData_IsRG]
+	,[AscStatementData_IsGenMR]
+	,[AscStatementData_IsGenBS]
+	,[AscStatementData_IsGenS]
+	,[AscStatementData_RG_AC]
+	,[AscStatementData_IG_AC]
+	,[AscStatementData_MR_UPC]
+	,[AscStatementData_StatementProcessId]
+	,@StatementProcessId
+FROM 
+	[dbo].[AscStatementDataGuMonthly]
+WHERE 
+	AscStatementData_Year = @Year
+	AND AscStatementData_Month = @Month
+	AND 	 AscStatementData_StatementProcessId=@StatementProcessId
+	------------ [dbo].[AscStatementDataMpZoneMonthly_SettlementProcess] ------
+INSERT INTO [dbo].[AscStatementDataMpZoneMonthly_SettlementProcess]
+(
+	[AscStatementData_Year]
+	,[AscStatementData_Month]
+		,[AscStatementData_CongestedZoneID]
+    ,[AscStatementData_CongestedZone]
+	,[AscStatementData_PartyRegisteration_Id]
+	,[AscStatementData_PartyName]
+	,[AscStatementData_PartyType_Code]
+	,[AscStatementData_MRC]
+	,[AscStatementData_RG_AC]
+	,[AscStatementData_IG_AC]
+	,[AscStatementData_SC_BSC]
+	,[AscStatementData_MAC]
+	,[AscStatementData_GS_SC]
+	,[AscStatementData_GBS_BSC]
+	,[AscStatementData_PAYABLE]
+	,[AscStatementData_RECEIVABLE]
+	,AscStatementData_ES
+	,AscStatementData_TP_SOLR
+	,[AscStatementData_StatementProcessId]
+	,[AscStatementData_SettlementProcessId]
+)
+
+SELECT 
+	[AscStatementData_Year]
+	,[AscStatementData_Month]
+		,[AscStatementData_CongestedZoneID]
+    ,[AscStatementData_CongestedZone]
+	,[AscStatementData_PartyRegisteration_Id]
+	,[AscStatementData_PartyName]
+	,[AscStatementData_PartyType_Code]
+	,[AscStatementData_MRC]
+	,[AscStatementData_RG_AC]
+	,[AscStatementData_IG_AC]
+	,[AscStatementData_SC_BSC]
+	,[AscStatementData_MAC]
+	,[AscStatementData_GS_SC]
+	,[AscStatementData_GBS_BSC]
+	,[AscStatementData_PAYABLE]
+	,[AscStatementData_RECEIVABLE]
+	,AscStatementData_ES
+	,AscStatementData_TP_SOLR
+	,[AscStatementData_StatementProcessId]
+	,@StatementProcessId
+FROM 
+	[dbo].[AscStatementDataMpZoneMonthly]
+WHERE
+	AscStatementData_Year = @Year
+	AND AscStatementData_Month = @Month
+	AND 	 AscStatementData_StatementProcessId=@StatementProcessId
+	------------ [dbo].[AscStatementDataZoneMonthly_SettlementProcess] ------
+INSERT INTO [dbo].[AscStatementDataZoneMonthly_SettlementProcess]
+(
+	[AscStatementData_Year]
+	,[AscStatementData_Month]
+	,[AscStatementData_Congestion_Zone]
+	,[AscStatementData_SO_MP]
+	,[AscStatementData_SO_AC]
+	,[AscStatementData_SO_AC_ASC]
+	,[AscStatementData_SO_MR_EP]
+	,[AscStatementData_SO_MR_VC]
+	,[AscStatementData_SO_RG_VC]
+	,[AscStatementData_SO_RG_EG_ARE]
+	,[AscStatementData_SO_IG_VC]
+	,[AscStatementData_SO_IG_EPG]
+	,[AscStatementData_MR_EAG]
+	,[AscStatementData_MR_EPG]
+	,[AscStatementData_MRC]
+	,[AscStatementData_RG_EAG]
+	,[AscStatementData_AC_MOD]
+	,[AscStatementData_RG_LOCC]
+	,[AscStatementData_IG_EAG]
+	,[AscStatementData_IG_EPG]
+	,[AscStatementData_IG_UPC]
+	,[AscStatementData_AC_Total]
+	,[AscStatementData_TaxZoneID]
+		,[AscStatementData_CongestedZoneID]
+    ,[AscStatementData_CongestedZone]
+	,[AscStatementData_SC_BSC]
+	,[AscStatementData_MAC]
+	,[AscStatementData_TAC]
+	,[AscStatementData_TD]
+	,[AscStatementData_GS_SC]
+	,[AscStatementData_GBS_BSC]
+	,[AscStatementData_RG_AC]
+	,[AscStatementData_IG_AC]
+	,AscStatementData_TP
+	,AscStatementData_ES_BS
+	,AscStatementData_KE_ES
+	,[AscStatementData_StatementProcessId]
+	,[AscStatementData_SettlementProcessId]
+)
+
+SELECT 
+	[AscStatementData_Year]
+	,[AscStatementData_Month]
+	,[AscStatementData_Congestion_Zone]
+	,[AscStatementData_SO_MP]
+	,[AscStatementData_SO_AC]
+	,[AscStatementData_SO_AC_ASC]
+	,[AscStatementData_SO_MR_EP]
+	,[AscStatementData_SO_MR_VC]
+	,[AscStatementData_SO_RG_VC]
+	,[AscStatementData_SO_RG_EG_ARE]
+	,[AscStatementData_SO_IG_VC]
+	,[AscStatementData_SO_IG_EPG]
+	,[AscStatementData_MR_EAG]
+	,[AscStatementData_MR_EPG]
+	,[AscStatementData_MRC]
+	,[AscStatementData_RG_EAG]
+	,[AscStatementData_AC_MOD]
+	,[AscStatementData_RG_LOCC]
+	,[AscStatementData_IG_EAG]
+	,[AscStatementData_IG_EPG]
+	,[AscStatementData_IG_UPC]
+	,[AscStatementData_AC_Total]
+	,[AscStatementData_TaxZoneID]
+		,[AscStatementData_CongestedZoneID]
+    ,[AscStatementData_CongestedZone]
+	,[AscStatementData_SC_BSC]
+	,[AscStatementData_MAC]
+	,[AscStatementData_TAC]
+	,[AscStatementData_TD]
+	,[AscStatementData_GS_SC]
+	,[AscStatementData_GBS_BSC]
+	,[AscStatementData_RG_AC]
+	,[AscStatementData_IG_AC]
+	,AscStatementData_TP
+	,AscStatementData_ES_BS
+	,AscStatementData_KE_ES
+	,[AscStatementData_StatementProcessId]
+	,@StatementProcessId
+FROM 
+	[dbo].[AscStatementDataZoneMonthly]
+WHERE
+	AscStatementData_Year = @Year
+	AND AscStatementData_Month = @Month
+	AND 	 AscStatementData_StatementProcessId=@StatementProcessId;
+	-------[AscStatementDataMpMonthly_SettlementProcess]----
+INSERT INTO [AscStatementDataMpMonthly_SettlementProcess]
+(
+	[AscStatementData_Year]
+	,[AscStatementData_Month]
+	,[AscStatementData_PartyRegisteration_Id]
+	,[AscStatementData_PartyName]
+	,[AscStatementData_PartyType_Code]
+	,[AscStatementData_MRC]
+	,[AscStatementData_RG_AC]
+	,[AscStatementData_IG_AC]
+	,[AscStatementData_SC_BSC]
+	,[AscStatementData_MAC]
+	,[AscStatementData_GS_SC]
+	,[AscStatementData_GBS_BSC]
+	,[AscStatementData_PAYABLE]
+	,[AscStatementData_RECEIVABLE]
+	,[AscStatementData_AdjustmentPAYABLE]
+	,[AscStatementData_AdjustmentRECEIVABLE]
+	,[AscStatementData_StatementProcessId]
+	,[AscStatementData_SettlementProcessId]
+)
+SELECT 
+	[AscStatementData_Year]
+	,[AscStatementData_Month]
+	,[AscStatementData_PartyRegisteration_Id]
+	,[AscStatementData_PartyName]
+	,[AscStatementData_PartyType_Code]
+	,[AscStatementData_MRC]
+	,[AscStatementData_RG_AC]
+	,[AscStatementData_IG_AC]
+	,[AscStatementData_SC_BSC]
+	,[AscStatementData_MAC]
+	,[AscStatementData_GS_SC]
+	,[AscStatementData_GBS_BSC]
+	,[AscStatementData_PAYABLE]
+	--,ABS([AscStatementData_RECEIVABLE])*-1
+	,[AscStatementData_RECEIVABLE]
+	,[AscStatementData_AdjustmentPAYABLE]
+	,[AscStatementData_AdjustmentRECEIVABLE]
+	,[AscStatementData_StatementProcessId]
+	,@StatementProcessId
+FROM 
+	[dbo].[AscStatementDataMpMonthly]
+WHERE
+	AscStatementData_Year = @Year
+	AND AscStatementData_Month = @Month
+	AND 	 AscStatementData_StatementProcessId=@StatementProcessId;
+
+	SELECT 1;
+END 
+END
