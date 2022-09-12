@@ -63,5 +63,5 @@ INSERT INTO [dbo].[AspNetRoles] VALUES
 INSERT INTO [dbo].[AspNetRoles] VALUES
 (NEWID(),@pModuleName+'_Approval',@vModuleId,4)
 
-
+-- testing commnet
 END
