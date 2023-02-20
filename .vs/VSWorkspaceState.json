@@ -1,6 +1,13 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\VersionSQL",
+    "\\VersionSQL\\MMSDEV",
+    "\\VersionSQL\\MMSDEV\\SQLDEVELOPER",
+    "\\VersionSQL\\MMSDEV\\SQLDEVELOPER\\MMS_Dev",
+    "\\VersionSQL\\MMSDEV\\SQLDEVELOPER\\MMS_Dev\\dbo",
+    "\\VersionSQL\\MMSDEV\\SQLDEVELOPER\\MMS_Dev\\dbo\\Procedure"
   ],
+  "SelectedNode": "\\VersionSQL\\MMSDEV\\SQLDEVELOPER\\MMS_Dev\\dbo\\Procedure\\test SP",
   "PreviewInSolutionExplorer": false
 }
