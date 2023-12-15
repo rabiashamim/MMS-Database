@@ -1,8 +1,6 @@
 ﻿/****** Object:  Table [dbo].[BmeStatementDataMpCategoryHourly_SettlementProcess]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[BmeStatementDataMpCategoryHourly_SettlementProcess](
+CREATE TABLE dbo.BmeStatementDataMpCategoryHourly_SettlementProcess(
 	[BmeStatementData_Id] [decimal](18, 0) IDENTITY(1,1) NOT NULL,
 	[BmeStatementData_NtdcDateTime] [datetime] NULL,
 	[BmeStatementData_Year] [int] NOT NULL,
@@ -48,5 +46,6 @@ CREATE TABLE [dbo].[BmeStatementDataMpCategoryHourly_SettlementProcess](
 	[BmeStatementData_TC] [decimal](25, 13) NULL,
 	[BmeStatementData_StatementProcessId] [decimal](18, 0) NULL,
 	[BmeStatementData_SettlementProcessId] [decimal](18, 0) NULL,
-	[BmeStatementData_CongestedZone] [nvarchar](50) NULL
+	[BmeStatementData_CongestedZone] [nvarchar](50) NULL,
+	[BmeStatementData_ActualEnergy_Metered] [decimal](25, 13) NULL
 ) ON [PRIMARY]

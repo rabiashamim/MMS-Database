@@ -1,8 +1,6 @@
 ﻿/****** Object:  Table [dbo].[AspNetUsers]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[AspNetUsers](
+CREATE TABLE dbo.AspNetUsers(
 	[Id] [nvarchar](128) NOT NULL,
 	[FirstName] [nvarchar](100) NOT NULL,
 	[LastName] [nvarchar](100) NOT NULL,
@@ -31,9 +29,71 @@ CREATE TABLE [dbo].[AspNetUsers](
 
 SET ANSI_PADDING ON
 
-CREATE UNIQUE NONCLUSTERED INDEX [UserNameIndex] ON [dbo].[AspNetUsers]
+CREATE UNIQUE NONCLUSTERED INDEX [UserNameIndex] ON dbo.AspNetUsers
 (
 	[UserName] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-ALTER TABLE [dbo].[AspNetUsers] ADD  DEFAULT ((0)) FOR [UserId]
-ALTER TABLE [dbo].[AspNetUsers] ADD  DEFAULT ((0)) FOR [EmployeeID]
+ALTER TABLE dbo.AspNetUsers ADD  DEFAULT ((0)) FOR [UserId]
+ALTER TABLE dbo.AspNetUsers ADD  DEFAULT ((0)) FOR [EmployeeID]
+
+CREATE TRIGGER [dbo].[audittrg_AspNetUsers] ON dbo.AspNetUsers
+AFTER UPDATE
+AS
+BEGIN
+
+SET NOCOUNT ON;
+
+INSERT INTO [dbo].[AspNetUsers_audit]
+           ([Id]
+           ,[FirstName]
+           ,[LastName]
+           ,[Email]
+           ,[EmailConfirmed]
+           ,[PasswordHash]
+           ,[SecurityStamp]
+           ,[PhoneNumber]
+           ,[PhoneNumberConfirmed]
+           ,[TwoFactorEnabled]
+           ,[LockoutEndDateUtc]
+           ,[LockoutEnabled]
+           ,[AccessFailedCount]
+           ,[UserName]
+           ,[UserId]
+           ,[Lu_Designation_Id]
+           ,[Lu_Department_Id]
+           ,[Lu_ReportTo]
+           ,[is_enabled]
+           ,[EmployeeID]
+           ,[updated_at]
+           ,[operation])
+      SELECT
+            [Id]
+           ,[FirstName]
+           ,[LastName]
+           ,[Email]
+           ,[EmailConfirmed]
+           ,[PasswordHash]
+           ,[SecurityStamp]
+           ,[PhoneNumber]
+           ,[PhoneNumberConfirmed]
+           ,[TwoFactorEnabled]
+           ,[LockoutEndDateUtc]
+           ,[LockoutEnabled]
+           ,[AccessFailedCount]
+           ,[UserName]
+           ,[UserId]
+           ,[Lu_Designation_Id]
+           ,[Lu_Department_Id]
+           ,[Lu_ReportTo]
+           ,[is_enabled]
+           ,[EmployeeID]
+           
+        ,GETDATE()
+        ,'ALT'
+    FROM
+        inserted i
+   
+END
+   
+
+ALTER TABLE dbo.AspNetUsers ENABLE TRIGGER [audittrg_AspNetUsers]

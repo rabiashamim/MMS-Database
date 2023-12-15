@@ -8,7 +8,7 @@
 --              
 -- Parameters: @Year, @Month, @StatementProcessId
 -- ============================================= 
-CREATE   Procedure  [dbo].[ASC_Step3Perform](			 
+CREATE   Procedure dbo.ASC_Step3Perform(			 
 			@Year int,
 			@Month int
 			,@StatementProcessId decimal(18,0)
@@ -27,18 +27,39 @@ SELECT top 1 @BmeStatementProcessId = dbo.[GetBMEtatementProcessIdFromASC] (@Sta
 /*
 step 3.1 Calculate Must Run EAG
 */
+UPDATE AscStatementDataGuHourly SET
+--SELECT
+AscStatementData_MR_EAG=BGUH.BmeStatementData_UnitWiseGeneration
+from AscStatementDataGuHourly GUH 
+INNER JOIN [BmeStatementDataGenUnitHourly_SettlementProcess]  BGUH 
+         ON BGUH.BmeStatementData_MtGeneratorUnit_Id = GUH.AscStatementData_GenerationUnit_Id
+		AND BGUH.BmeStatementData_NtdcDateTime = GUH.AscStatementData_NtdcDateTime 
+	    AND BGUH.BmeStatementData_StatementProcessId=@BmeStatementProcessId
+--SELECT GUH.AscStatementData_MR_EAG
+--FROM AscStatementDataGuHourly GUH
+where
+GUH.AscStatementData_Year=@Year
+and GUH.AscStatementData_Month=@Month
+and GUH.AscStatementData_StatementProcessId=@StatementProcessId
+and GUH.AscStatementData_IsGenMR=1
 
 
+
+/*
 Select GUP.AscStatementData_CdpId,GUP.AscStatementData_SOUnitId, CDPH.BmeStatementData_NtdcDateTime,
  CDPH.BmeStatementData_IncEnergyExport,CDPH.BmeStatementData_IncEnergyImport,
-	 ISNULL(CASE WHEN GUP.AscStatementData_FromPartyCategory_Code in ('GEN','CGEN','EGEN') THEN CDPH.BmeStatementData_IncEnergyExport 
-	      WHEN GUP.AscStatementData_ToPartyCategory_Code in ('GEN','CGEN','EGEN') THEN CDPH.BmeStatementData_IncEnergyImport END,0)as EAG
+	 ISNULL(CASE WHEN GUP.AscStatementData_FromPartyCategory_Code in ('GEN','CGEN','EGEN') 
+	 THEN CDPH.BmeStatementData_IncEnergyExport 
+	      WHEN GUP.AscStatementData_ToPartyCategory_Code in ('GEN','CGEN','EGEN') 
+		  THEN CDPH.BmeStatementData_IncEnergyImport END,0)as EAG
 	
 into #TempEAG
 from
 	[dbo].[AscStatementDataCdpGuParty] GUP
 INNER JOIN BmeStatementDataCdpHourly CDPH ON  GUP.AscStatementData_CdpId=CDPH.BmeStatementData_CdpId
 WHERE  GUP.AscStatementData_StatementProcessId=@StatementProcessId and CDPH.BmeStatementData_Year=@Year and CDPH.BmeStatementData_Month=@Month and CDPH.BmeStatementData_StatementProcessId=@BmeStatementProcessId;
+
+
 
 UPDATE AscStatementDataGuHourly SET
 AscStatementData_MR_EAG=TE.EAG
@@ -52,6 +73,7 @@ SELECT GUP.AscStatementData_Generator_Id FROM [dbo].[AscStatementDataCdpGuParty]
 GROUP by GUP.AscStatementData_Generator_Id
 HAVING count(GUP.AscStatementData_SOUnitId)=1
 )
+
 
 
 UPDATE AscStatementDataGuHourly SET
@@ -78,15 +100,18 @@ INNER JOIN
 GROUP BY T.AscStatementData_SOUnitId, T.BmeStatementData_NtdcDateTime
 ) TE
 on GUH.AscStatementData_SOUnitId=TE.AscStatementData_SOUnitId and GUH.AscStatementData_NtdcDateTime=TE.BmeStatementData_NtdcDateTime
+
 where
 GUH.AscStatementData_Year=@Year and GUH.AscStatementData_Month=@Month and GUH.AscStatementData_StatementProcessId=@StatementProcessId
 and AscStatementData_IsGenMR=1
 
 AND GUH.AscStatementData_Generator_Id  IN (
-SELECT GUP.AscStatementData_Generator_Id FROM [dbo].[AscStatementDataCdpGuParty] GUP WHERE AscStatementData_StatementProcessId = @StatementProcessId
+SELECT GUP.AscStatementData_Generator_Id FROM [dbo].[AscStatementDataCdpGuParty] GUP 
+WHERE AscStatementData_StatementProcessId = @StatementProcessId
 GROUP by GUP.AscStatementData_Generator_Id
 HAVING count(GUP.AscStatementData_SOUnitId)>1
 );
+*/
 
 /*
 step 3.2 Calculate Must Run EPG

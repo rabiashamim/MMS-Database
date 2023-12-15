@@ -7,12 +7,12 @@
 -- Author:  M.Asghar(.Net/SQL Consultant)  
 -- CREATE date: April 18, 2022 
 -- ALTER date: June 10, 2022   
--- Description: 
+-- Description: testing alter only 
 --              
 -- Parameters: @Year, @Month, @StatementProcessId
 -- =============================================   
 --    [dbo].[ASC_Step1Perform] 2021,9,220   
-CREATE   Procedure [dbo].[ASC_Step12Perform](        
+CREATE   Procedure dbo.ASC_Step12Perform(        
    @Year int,    
    @Month int    
    ,@StatementProcessId decimal(18,0)    

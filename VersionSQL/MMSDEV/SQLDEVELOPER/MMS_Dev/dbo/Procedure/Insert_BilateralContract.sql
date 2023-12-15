@@ -3,7 +3,7 @@
           
         
       
-CREATE PROCEDURE [dbo].[Insert_BilateralContract]          
+CREATE PROCEDURE dbo.Insert_BilateralContract          
   @fileMasterId decimal(18,0)      
  ,@UserId Int          
  ,@tblBilateralContract [dbo].[BilateralContract] READONLY          
@@ -11,6 +11,20 @@ CREATE PROCEDURE [dbo].[Insert_BilateralContract]
 AS          
 BEGIN          
     SET NOCOUNT ON;          
+   
+        declare @version int=0;
+		 select @version=MtSOFileMaster_Version from MtSOFileMaster where MtSOFileMaster_Id=@fileMasterId
+
+		  declare @period int=0;
+		  select @period =LuAccountingMonth_Id from MtSOFileMaster where MtSOFileMaster_Id=@fileMasterId
+
+		  declare @pSOFileTemplate int=0;
+		  select @pSOFileTemplate=LuSOFileTemplate_Id from MtSOFileMaster where MtSOFileMaster_Id=@fileMasterId
+
+		  declare @tempname NVARCHAR(MAX)=NULL;
+		  SELECT @tempname=LuSOFileTemplate_Name FROM LuSOFileTemplate WHERE  LuSOFileTemplate_Id=@pSOFileTemplate
+
+
  declare @vMtBilateralContract_Id Decimal(18,0);          
           
  SELECT @vMtBilateralContract_Id=ISNUll(MAX(MtBilateralContract_Id),0) FROM MtBilateralContract            
@@ -63,22 +77,32 @@ BEGIN
   ,@UserId          
   ,GETUTCDATE()          
   ,0          
-  ,  CASE WHEN ContractType='Generation Following' THEN 1     
-          WHEN ContractType='Load Following' THEN 2     
-          WHEN ContractType='Fixed Quantity' THEN 3     
-          WHEN ContractType='Customized' THEN 4     
+  ,  CASE WHEN ContractType in ('Generation Following','Generation Following Supply Contract') THEN 1     
+          WHEN ContractType in ('Load Following','Load Following Supply Contract') THEN 2     
+          WHEN ContractType in ('Fixed Quantity','Financial Supply Contract with Fixed Quantities') THEN 3     
+          WHEN ContractType in ('Customized','Customized Contract') THEN 4  
+		  WHEN ContractType='Capacity and Associated Energy Supply Contract' THEN 5 
   END    
   ,  
-  CASE WHEN  ContractType='Load Following' and (ISNULL(DistributionLosses,'')<>'' ) and  (ISNULL(TransmissionLoss,'')='') then 23  
-    WHEN  ContractType='Load Following' and (ISNULL(DistributionLosses,'')= '') and  (ISNULL(TransmissionLoss,'')<>'') then 22  
-    WHEN  ContractType='Load Following' and (ISNULL(DistributionLosses,'')= '') and  (ISNULL(TransmissionLoss,'') ='') then 21  
-      WHEN  ContractType='Customized' and ISNULL(DistributionLosses,'') <> '' and  ISNULL(TransmissionLoss,'') <>  ''  then 41  
-      WHEN  ContractType='Customized' and ((ISNULL(DistributionLosses,'') ='' ) or  (ISNULL(TransmissionLoss,'') ='' ))then 42  
-	  WHEN ContractType='Fixed Quantity' or ContractType='Generation Following' then 0
+  CASE WHEN  ContractType in ('Load Following','Load Following Supply Contract') and (ISNULL(DistributionLosses,'')<>'' ) and  (ISNULL(TransmissionLoss,'')='') then 23  
+    WHEN  ContractType in ('Load Following','Load Following Supply Contract') and (ISNULL(DistributionLosses,'')= '') and  (ISNULL(TransmissionLoss,'')<>'') then 22  
+    WHEN  ContractType in ('Load Following','Load Following Supply Contract') and (ISNULL(DistributionLosses,'')= '') and  (ISNULL(TransmissionLoss,'') ='') then 21  
+      WHEN  ContractType in ('Customized','Customized Contract') and ISNULL(DistributionLosses,'') <> '' and  ISNULL(TransmissionLoss,'') <>  ''  then 41  
+      WHEN  ContractType in ('Customized','Customized Contract') and ((ISNULL(DistributionLosses,'') ='' ) or  (ISNULL(TransmissionLoss,'') ='' ))then 42  
+	  WHEN ContractType in ('Fixed Quantity','Financial Supply Contract with Fixed Quantities') or ContractType in ('Generation Following','Generation Following Supply Contract') then 0
   END  
   ,BuyerSrCategory_Code
   ,SellerSrCategory_Code
- FROM @tblBilateralContract          
+ FROM @tblBilateralContract        
+ 
+ 	declare @output VARCHAR(max);
+			SET @output= +@tempname+'submitted for approval. Settlement Period:' +convert(varchar(max),@period) +',Version:' + convert(varchar(max),@version) 
+
+				EXEC [dbo].[SystemLogs] 
+				@user=@UserId,
+				 @moduleName='Data Management',  
+				 @CrudOperationName='Create',  
+				 @logMessage=@output 
         
         
         

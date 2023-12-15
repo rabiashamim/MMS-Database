@@ -9,7 +9,7 @@
 -- Parameters: @Year, @Month, @StatementProcessId
 -- ============================================= 
 --    [dbo].[ASC_Step1Perform] 2021,11
-CREATE   Procedure [dbo].[ASC_StepCPerform](			 
+CREATE   Proceduredbo.ASC_StepCPerform(			 
 			@Year int,
 			@Month int
 			,@StatementProcessId decimal(18,0)
@@ -24,16 +24,24 @@ BEGIN TRY
   DECLARE @BmeStatementProcessId decimal(18,0) = null;
 SELECT top 1 @BmeStatementProcessId = dbo.[GetBMEtatementProcessIdFromASC] (@StatementProcessId);
 
-UPDATE BmeStatementDataMpCategoryHourly
-SET BmeStatementData_MAC=MH.BmeStatementData_ES/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_MAC
-, BmeStatementData_MRC=MH.BmeStatementData_ES/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_MRC
-,BmeStatementData_IG_AC=MH.BmeStatementData_ES/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_IG_AC
-,BmeStatementData_RG_AC=MH.BmeStatementData_ES/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_RG_AC
-,BmeStatementData_GS_SC=MH.BmeStatementData_ES/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_GS_SC
-,BmeStatementData_GBS_BSC=MH.BmeStatementData_ES/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_GBS_BSC
-,BmeStatementData_TC=MH.BmeStatementData_ES/CAST(NULLIF(ZM.AscStatementData_TD,0) AS DECIMAL(18,4))*ZM.AscStatementData_TAC
-
-FROM BmeStatementDataMpCategoryHourly MH 
+UPDATE BmeStatementDataMpCategoryHourly_SettlementProcess
+-- BmeStatementData_MAC=MH.BmeStatementData_ES/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_MAC
+--, BmeStatementData_MRC=MH.BmeStatementData_ES/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_MRC
+--,BmeStatementData_IG_AC=MH.BmeStatementData_ES/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_IG_AC
+--,BmeStatementData_RG_AC=MH.BmeStatementData_ES/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_RG_AC
+--,BmeStatementData_GS_SC=MH.BmeStatementData_ES/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_GS_SC
+--,BmeStatementData_GBS_BSC=MH.BmeStatementData_ES/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_GBS_BSC
+-- TaskId: 4062
+--,BmeStatementData_TC=MH.BmeStatementData_ES/CAST(NULLIF(ZM.AscStatementData_TD,0) AS DECIMAL(18,4))*ZM.AscStatementData_TAC
+SET
+ BmeStatementData_MAC=MH.BmeStatementData_EnergySuppliedActual/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_MAC
+,BmeStatementData_MRC=MH.BmeStatementData_EnergySuppliedActual/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_MRC
+,BmeStatementData_IG_AC=MH.BmeStatementData_EnergySuppliedActual/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_IG_AC
+,BmeStatementData_RG_AC=MH.BmeStatementData_EnergySuppliedActual/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_RG_AC
+,BmeStatementData_GS_SC=MH.BmeStatementData_EnergySuppliedActual/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_GS_SC
+,BmeStatementData_GBS_BSC=MH.BmeStatementData_EnergySuppliedActual/NULLIF(ZM.AscStatementData_TD,0)*ZM.AscStatementData_GBS_BSC
+,BmeStatementData_TC=MH.BmeStatementData_EnergySuppliedActual/CAST(NULLIF(ZM.AscStatementData_TD,0) AS DECIMAL(18,4))*ZM.AscStatementData_TAC
+FROM BmeStatementDataMpCategoryHourly_SettlementProcess MH 
 INNER JOIN AscStatementDataZoneMonthly ZM
 ON MH.BmeStatementData_Year=ZM.AscStatementData_Year and MH.BmeStatementData_Month=ZM.AscStatementData_Month 
 and MH.BmeStatementData_CongestedZoneID=ZM.AscStatementData_CongestedZoneID
@@ -57,7 +65,7 @@ as
 	SUM(BmeStatementData_GBS_BSC) AS BmeStatementData_GBS_BSC,	
 	SUM(BmeStatementData_TC) AS BmeStatementData_TC
 	 
-	from BmeStatementDataMpCategoryHourly MH
+	from BmeStatementDataMpCategoryHourly_SettlementProcess MH
 	where MH.BmeStatementData_Year=@Year and MH.BmeStatementData_Month=@Month 
     and MH.BmeStatementData_StatementProcessId=@BmeStatementProcessId
 	group by MH.BmeStatementData_StatementProcessId,
@@ -67,7 +75,7 @@ as
     MH.BmeStatementData_Year,
     MH.BmeStatementData_Month
 )
-UPDATE BmeStatementDataMpCategoryMonthly
+UPDATE BmeStatementDataMpCategoryMonthly_SettlementProcess
 SET  BmeStatementData_MAC=C.BmeStatementData_MAC,
 	BmeStatementData_IG_AC =C.BmeStatementData_IG_AC,
 	BmeStatementData_MRC =C.BmeStatementData_MRC,
@@ -77,7 +85,7 @@ SET  BmeStatementData_MAC=C.BmeStatementData_MAC,
 	BmeStatementData_TC=C.BmeStatementData_TC		,
 	BmeStatementData_ES = C.BmeStatementData_ES,
 	BmeStatementData_ET=C.BmeStatementData_EnergyTraded
-FROM BmeStatementDataMpCategoryMonthly CH INNER JOIN
+FROM BmeStatementDataMpCategoryMonthly_SettlementProcess CH INNER JOIN
 MpCategoryMonthly_CTE C
 ON CH.BmeStatementData_PartyRegisteration_Id= C.BmeStatementData_PartyRegisteration_Id 
 and CH.BmeStatementData_PartyCategory_Code = C.BmeStatementData_PartyCategory_Code
@@ -102,9 +110,9 @@ as
 	group by MH.AscStatementData_PartyRegisteration_Id,MH.AscStatementData_PartyCategory_Code,
     MH.AscStatementData_CongestedZoneID,MH.AscStatementData_Year,MH.AscStatementData_Month,MH.AscStatementData_StatementProcessId
 )
-UPDATE BmeStatementDataMpCategoryMonthly
+UPDATE BmeStatementDataMpCategoryMonthly_SettlementProcess
 SET  BmeStatementData_TAC=C.AscStatementData_TAC
-FROM BmeStatementDataMpCategoryMonthly CH INNER JOIN
+FROM BmeStatementDataMpCategoryMonthly_SettlementProcess CH INNER JOIN
 MpGenMonthly_CTE C
 ON CH.BmeStatementData_PartyRegisteration_Id= C.AscStatementData_PartyRegisteration_Id 
 and CH.BmeStatementData_PartyCategory_Code = C.AscStatementData_PartyCategory_Code

@@ -1,15 +1,14 @@
 ﻿/****** Object:  Procedure [dbo].[ImportBVMDataFromAPI]    Committed by VersionSQL https://www.versionsql.com ******/
 
 --======================================================================
---Author  : Sadaf Malik
+--Author  : Sadaf Malik| Ali Imran
 --Reviewer : <>
 --CreatedDate : 11 March 2022
 --Comments : Import BVM Data From API
 --======================================================================
---  [dbo].[ImportBVMDataFromAPI] @pDate='29-05-2022' , @pType=1
---select * from InterfaceMtBvmReading
---truncate table InterfaceMtBvmReading
-CREATE PROCEDURE [dbo].[ImportBVMDataFromAPI]
+--  dbo.ImportBVMDataFromAPI @pDate='29-05-2022 00:00:00' , @pType=1
+
+CREATE PROCEDURE dbo.ImportBVMDataFromAPI
 @pDate varchar(50) =null,
  @pType int=null
 AS
@@ -47,6 +46,14 @@ DECLARE @Notes varchar(200);
 --ELSE
 --	Return
 
+
+/*
+Action method replaced by Ali and Sadaf as per instruction from NTDC (Shakeel DM)
+getBVMMeteringDataHalfHourly -> getBVMMeteringDataHalfHourlyFinal 
+*/
+
+
+
 SET @Body = 'api_key=4babdd93-cf6f-4445-9334-c141457c3c8c&action=getBVMMeteringDataHalfHourly&start_time='+@pDate+'&end_time='+@pDate
 
 --SET @Body = 'api_key=4babdd93-cf6f-4445-9334-c141457c3c8c&action=getBVMMeteringDataHalfHourly&start_time=01-01-2022 00:30:30&end_time=01-01-2022 00:30:30'
@@ -61,13 +68,14 @@ EXEC sp_OAMethod @Object, 'SETRequestHeader', null, 'Content-Type', 'application
 EXEC sp_OAMethod @Object, 'Send', null, @Body
 
 
+
 INSERT into @json (Json_Table) exec sp_OAGetProperty @Object, 'responseText'
 select * from @json
 ---------------------------------------------------------------------------------------
 -------------------	Insert into CDP Detail Interface table
 ---------------------------------------------------------------------------------------
+EXECUTE [dbo].[InsertInterfaceMtBvmReadingHistory]
 
-TRUNCATE table InterfaceMtBvmReading
 
 drop TABLE if EXISTS #temp
 

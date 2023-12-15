@@ -1,8 +1,6 @@
 ﻿/****** Object:  Table [dbo].[AscStatementDataMpZoneMonthly]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[AscStatementDataMpZoneMonthly](
+CREATE TABLE dbo.AscStatementDataMpZoneMonthly(
 	[AscStatementData_Id] [decimal](18, 0) IDENTITY(1,1) NOT NULL,
 	[AscStatementData_Year] [int] NOT NULL,
 	[AscStatementData_Month] [int] NOT NULL,
@@ -25,6 +23,8 @@ CREATE TABLE [dbo].[AscStatementDataMpZoneMonthly](
 	[AscStatementData_CongestedZone] [nvarchar](50) NULL,
 	[AscStatementData_TR_SOLR] [decimal](25, 13) NULL,
 	[AscStatementData_ET] [decimal](25, 13) NULL,
+	[AscStatementData_SOLR_ETB_Legacy] [decimal](25, 13) NULL,
+	[AscStatementData_LegacyShareInReceiveable] [decimal](25, 13) NULL,
  CONSTRAINT [PK_AscStatementDataMpZoneMonthly] PRIMARY KEY CLUSTERED 
 (
 	[AscStatementData_Year] ASC,

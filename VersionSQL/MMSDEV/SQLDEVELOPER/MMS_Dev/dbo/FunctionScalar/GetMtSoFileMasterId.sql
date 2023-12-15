@@ -1,12 +1,12 @@
-﻿/****** Object:  Function [dbo].[GetMtSoFileMasterId]    Committed by VersionSQL https://www.versionsql.com ******/
+﻿/****** Object:  ScalarFunction [dbo].[GetMtSoFileMasterId]    Committed by VersionSQL https://www.versionsql.com ******/
 
 -- =============================================
 -- Author:		<Author,,Name>
 -- Create date: <Create Date, ,>
 -- Description:	<Description, ,>
---select [dbo].[GetMtSoFileMasterId] (3,1) --38
+--select dbo.GetMtSoFileMasterId (3,1) --38
 -- =============================================
-CREATE function [dbo].[GetMtSoFileMasterId]
+CREATE FUNCTION dbo.GetMtSoFileMasterId
 (
 	@pSettlementProcessId decimal(18,0)
 	,@pLuSOFileTemplateId int

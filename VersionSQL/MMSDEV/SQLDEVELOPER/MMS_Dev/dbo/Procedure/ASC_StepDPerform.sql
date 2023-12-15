@@ -9,7 +9,7 @@
 -- Parameters: @Year, @Month, @StatementProcessId
 -- ============================================= 
 --    [dbo].[ASC_Step1Perform] 2021,11
-CREATE   Procedure [dbo].[ASC_StepDPerform](			 
+CREATE   Proceduredbo.ASC_StepDPerform(			 
 			@Year int,
 			@Month int
 			,@StatementProcessId decimal(18,0)
@@ -44,7 +44,7 @@ as
 	SUM(MH.BmeStatementData_TC) AS AscStatementData_RECEIVABLE,
     SUM(MH.BmeStatementData_ES) AS AscStatementData_ES ,
 	SUM(MH.BmeStatementData_ET) AS AscStatementData_ET
-	from BmeStatementDataMpCategoryMonthly MH
+	from BmeStatementDataMpCategoryMonthly_SettlementProcess  MH
 	where MH.BmeStatementData_Year=@Year and MH.BmeStatementData_Month=@Month 
     and MH.BmeStatementData_StatementProcessId=@BmeStatementProcessId
 	group by MH.BmeStatementData_PartyRegisteration_Id,MH.BmeStatementData_PartyName,MH.BmeStatementData_PartyType_Code,

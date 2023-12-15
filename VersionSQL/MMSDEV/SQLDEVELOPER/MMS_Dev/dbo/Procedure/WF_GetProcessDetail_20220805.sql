@@ -1,6 +1,6 @@
 ﻿/****** Object:  Procedure [dbo].[WF_GetProcessDetail_20220805]    Committed by VersionSQL https://www.versionsql.com ******/
 
-CREATE procedure WF_GetProcessDetail_20220805      
+CREATE procedure dbo.WF_GetProcessDetail_20220805      
 @RuWorkFlowHeader_id int,      
 @MtWFHistory_Process_id decimal(18,0) ,        
 @MtWFHistory_LevelID int,      
@@ -26,7 +26,7 @@ create table #WF_history
       
  declare @module_id int      
       
- select @module_id=RuModules_id from RuWorkFlow_header where RuWorkFlowHeader_id=@RuWorkFlowHeader_id      
+ select @module_id=RuModulesProcess_Id from RuWorkFlow_header where RuWorkFlowHeader_id=@RuWorkFlowHeader_id      
       
  declare        
   @MtStatementProcess_ExecutionFinishDate datetime                

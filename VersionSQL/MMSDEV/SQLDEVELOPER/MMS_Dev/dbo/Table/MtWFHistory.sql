@@ -1,8 +1,6 @@
 ﻿/****** Object:  Table [dbo].[MtWFHistory]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[MtWFHistory](
+CREATE TABLE dbo.MtWFHistory(
 	[MtWFHistory_id] [int] IDENTITY(1,1) NOT NULL,
 	[RuWorkFlowHeader_id] [int] NOT NULL,
 	[MtWFHistory_Process_id] [decimal](18, 0) NOT NULL,
@@ -23,6 +21,7 @@ CREATE TABLE [dbo].[MtWFHistory](
 	[MtWFHistory_ModifiedOn] [datetime] NULL,
 	[is_initiator] [int] NULL,
 	[notify_flag] [int] NULL,
+	[is_read] [int] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[RuWorkFlowHeader_id] ASC,

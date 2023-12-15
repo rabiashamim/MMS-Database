@@ -1,14 +1,14 @@
 ﻿/****** Object:  Procedure [dbo].[BME_Step7Perform]    Committed by VersionSQL https://www.versionsql.com ******/
 
 -- =============================================  
--- Author:  M.Asghar(.Net/SQL Consultant)  
+-- Author:  Ali IMran|M.Asghar(.Net/SQL Consultant)  
 -- CREATE date: March 18, @Year 
--- ALTER date: June 01, @Year   
+-- ALTER date: 30 august 2023   
 -- Description: 
 --              
 -- Parameters: @Year, @Month, @StatementProcessId
 -- ============================================= 
-CREATE   Procedure [dbo].[BME_Step7Perform](			 
+CREATE   Procedure dbo.BME_Step7Perform(			 
 			@Year int,
 			@Month int
 			,@StatementProcessId decimal(18,0))
@@ -42,7 +42,7 @@ inner join RuCDPDetail cdp on cdp.RuCDPDetail_Id=mcm.MtCDPDetail_Id
 where isnull( g.MtGenerator_IsDeleted,0)=0
 and isnull(gu.MtGenerationUnit_IsDeleted,0)=0
 and isnull(mcm.MtConnectedMeter_isDeleted,0)=0
-
+AND mcm.MtPartyCategory_Id NOT IN (SELECT MtPartyCategory_Id FROM MtPartyCategory MPC WHERE MPC.SrCategory_Code IN ('BPC','EBPC') AND ISNULL(MPC.isDeleted,0)=0);  
 --***********************************************************************
 --***********************************************************************
 --steps  7.1
@@ -63,12 +63,20 @@ FROM
 						 inner join MtGenerator on MtGenerator.MtGenerator_Id = MtGenerationUnit.MtGenerator_Id
 						 inner join MtPartyCategory on MtPartyCategory.MtPartyCategory_Id = MtGenerator.MtPartyCategory_Id
 						 inner join MtPartyRegisteration on MtPartyRegisteration.MtPartyRegisteration_Id = MtPartyCategory.MtPartyRegisteration_Id
-						 where SrTechnologyType_Code='THR'
+						 where 
+						 ISNULL(MtGenerator.MtGenerator_IsDeleted,0)=0
+						 AND ISNULL(MtGenerator.isDeleted,0)=0
+						 AND ISNULL(MtGenerationUnit.MtGenerationUnit_IsDeleted,0)=0
+						 AND ISNULL(MtGenerationUnit.isDeleted,0)=0
+						 AND ISNULL(MtPartyCategory.isDeleted,0)=0
+						 AND ISNULL(MtPartyRegisteration.isDeleted,0)=0
+						 AND SrTechnologyType_Code='THR'
 						 and (
                                 MtPartyRegisteration.MtPartyRegisteration_Id in(select MtPartyRegisteration_Id from MtPartyRegisteration where MtPartyRegisteration_IsPowerPool=1) 
                                 or  MtPartyRegisteration.MtPartyRegisteration_Id in (
 								 select distinct MtBilateralContract_SellerMPId from MtBilateralContract where MtBilateralContract_BuyerMPId in (
-								 select MtPartyRegisteration_Id from MtPartyRegisteration where MtPartyRegisteration_IsPowerPool=1) and MtSOFileMaster_Id=dbo.GetMtSoFileMasterId(@StatementProcessId, 8)
+								 select MtPartyRegisteration_Id from MtPartyRegisteration where MtPartyRegisteration_IsPowerPool=1)
+								 and MtSOFileMaster_Id=dbo.GetMtSoFileMasterId(@StatementProcessId, 8)
 						        )
                             )
 						 AND MtAvailibilityData.MtSOFileMaster_Id=dbo.GetMtSoFileMasterId(@StatementProcessId, 2)
@@ -76,7 +84,9 @@ FROM
 						 GROUP BY MtAvailibilityData.MtAvailibilityData_Date,MtAvailibilityData.MtAvailibilityData_Hour
 						 ) 
 		as AD on  DH.BmeStatementData_NtdcDateTime = AD.MtAvailibilityDataDateHour
-         where DH.BmeStatementData_Year = @Year and DH.BmeStatementData_Month = @Month AND DH.BmeStatementData_StatementProcessId=@StatementProcessId 
+         where DH.BmeStatementData_Year = @Year 
+		 and DH.BmeStatementData_Month = @Month 
+		 AND DH.BmeStatementData_StatementProcessId=@StatementProcessId 
 
 
 
@@ -101,7 +111,14 @@ FROM
 						 inner join MtGenerator on MtGenerator.MtGenerator_Id = MtGenerationUnit.MtGenerator_Id
 						 inner join MtPartyCategory on MtPartyCategory.MtPartyCategory_Id = MtGenerator.MtPartyCategory_Id
 						 inner join MtPartyRegisteration on MtPartyRegisteration.MtPartyRegisteration_Id = MtPartyCategory.MtPartyRegisteration_Id
-						 where SrTechnologyType_Code='THR'
+						 where 
+						  ISNULL(MtGenerator.MtGenerator_IsDeleted,0)=0
+						 AND ISNULL(MtGenerator.isDeleted,0)=0
+						 AND ISNULL(MtGenerationUnit.MtGenerationUnit_IsDeleted,0)=0
+						 AND ISNULL(MtGenerationUnit.isDeleted,0)=0
+						 AND ISNULL(MtPartyCategory.isDeleted,0)=0
+						 AND ISNULL(MtPartyRegisteration.isDeleted,0)=0
+						 AND SrTechnologyType_Code='THR'
 						 and  (
                                 MtPartyRegisteration.MtPartyRegisteration_Id in(select MtPartyRegisteration_Id from MtPartyRegisteration where MtPartyRegisteration_IsPowerPool=1) 
                                 or  MtPartyRegisteration.MtPartyRegisteration_Id in (
@@ -255,52 +272,9 @@ GROUP BY DHA.BmeStatementData_NtdcDateTime
 AS DHGenLeg 
 ON cdpActual.BmeStatementData_NtdcDateTime=DHGenLeg.BmeStatementData_NtdcDateTime
       where cdpActual.BmeStatementData_Year=@Year and cdpActual.BmeStatementData_Month=@Month
-      and cdpActual.BmeStatementData_StatementProcessId=@StatementProcessId 
-;
+      and cdpActual.BmeStatementData_StatementProcessId=@StatementProcessId ;
 
-						   
-/*
----------------------
-
-UPDATE BmeStatementDataMpCategoryHourly 
-	set 
-	BmeStatementData_EnergySuppliedGeneratedLegacy = cdp.BmeStatementData_EnergySuppliedGenerated
-	FROM BmeStatementDataMpCategoryHourly as dh inner join
-           (
-		   select OP.BmeStatementData_OwnerPartyRegisteration_Id,op.BmeStatementData_OwnerPartyCategory_Code
-		   ,OP.BmeStatementData_CongestedZoneID
-		   ,BmeStatementData_NtdcDateTime, 
-		   Sum(
-	    ISNULL( CASE WHEN CDPH.BmeStatementData_ToPartyType_Code='MP'
-		 THEN
-	      CDPH.BmeStatementData_AdjustedEnergyImport
-		  END ,0)
-		  +
-		ISNULL( CASE WHEN CDPH.BmeStatementData_FromPartyType_Code='MP'
-		 THEN
-	      CDPH.BmeStatementData_AdjustedEnergyExport
-		END,0)
-
-	) as BmeStatementData_EnergySuppliedGenerated	
-from BmeStatementDataCdpHourly CDPH
-	INNER JOIN  BmeStatementDataCdpOwnerParty  OP 
-	ON OP.BmeStatementData_ToPartyRegisteration_Id = CDPH.BmeStatementData_ToPartyRegisteration_Id
-	AND OP.BmeStatementData_CdpId=CDPH.BmeStatementData_CdpId  
-	AND OP.BmeStatementData_FromPartyRegisteration_Id=CDPH.BmeStatementData_FromPartyRegisteration_Id
-	where CDPH.BmeStatementData_Year = @Year and CDPH.BmeStatementData_Month = @Month AND CDPH.BmeStatementData_StatementProcessId=@StatementProcessId
-AND CDPH.BmeStatementData_IsEnergyImported=0
-AND CDPH.BmeStatementData_ISARE=1
-AND CDPH.BmeStatementData_IsLegacy=1
-
-		GROUP BY OP.BmeStatementData_OwnerPartyRegisteration_Id, BmeStatementData_NtdcDateTime
-		,OP.BmeStatementData_OwnerPartyCategory_Code,OP.BmeStatementData_CongestedZoneID
-		   ) cdp  on 
-		   dh.BmeStatementData_PartyRegisteration_Id = cdp.BmeStatementData_OwnerPartyRegisteration_Id 
-		   and dh.BmeStatementData_NtdcDateTime = cdp.BmeStatementData_NtdcDateTime
-		   and dh.BmeStatementData_PartyCategory_Code=cdp.BmeStatementData_OwnerPartyCategory_Code
-		   and dh.BmeStatementData_CongestedZoneID=cdp.BmeStatementData_CongestedZoneID;
-*/						   
------------------------------------------
+	
 
 UPDATE BmeStatementDataHourly 
 	set 
@@ -330,50 +304,7 @@ AND BmeStatementData_Year=@Year and BmeStatementData_Month=@Month and BmeStateme
 
  where DH.BmeStatementData_Year = @Year and DH.BmeStatementData_Month = @Month AND DH.BmeStatementData_StatementProcessId=@StatementProcessId 
 
-		   
-----------------------
-/*
-UPDATE BmeStatementDataMpCategoryHourly 
-	set 
-	BmeStatementData_EnergySuppliedImportedLegacy = cdp.BmeStatementData_EnergySuppliedImported
-	FROM BmeStatementDataMpCategoryHourly as dh inner join
-           (
-		   select OP.BmeStatementData_OwnerPartyRegisteration_Id,BmeStatementData_NtdcDateTime
-		   ,OP.BmeStatementData_OwnerPartyCategory_Code
-		   ,OP.BmeStatementData_CongestedZoneID, 
-		 Sum(
-	    ISNULL( CASE WHEN CDPH.BmeStatementData_ToPartyType_Code='MP'
-		 THEN
-	      CDPH.BmeStatementData_AdjustedEnergyImport
-		  END ,0)
-		  +
-		ISNULL( CASE WHEN CDPH.BmeStatementData_FromPartyType_Code='MP'
-		 THEN
-	      CDPH.BmeStatementData_AdjustedEnergyExport
-		END,0)
-
-	) as BmeStatementData_EnergySuppliedImported
-from BmeStatementDataCdpHourly CDPH
-	INNER JOIN  BmeStatementDataCdpOwnerParty  OP 
-	ON OP.BmeStatementData_ToPartyRegisteration_Id = CDPH.BmeStatementData_ToPartyRegisteration_Id
-	AND OP.BmeStatementData_CdpId=CDPH.BmeStatementData_CdpId  
-	AND OP.BmeStatementData_FromPartyRegisteration_Id=CDPH.BmeStatementData_FromPartyRegisteration_Id
-	where CDPH.BmeStatementData_Year = @Year and CDPH.BmeStatementData_Month = @Month AND CDPH.BmeStatementData_StatementProcessId=@StatementProcessId
-AND CDPH.BmeStatementData_IsEnergyImported=1
-AND CDPH.BmeStatementData_ISARE=1
-AND CDPH.BmeStatementData_IsLegacy=1
-
-		GROUP BY OP.BmeStatementData_OwnerPartyRegisteration_Id,OP.BmeStatementData_OwnerPartyCategory_Code,
-		OP.BmeStatementData_CongestedZoneID,BmeStatementData_NtdcDateTime
-		   ) cdp  on dh.BmeStatementData_PartyRegisteration_Id=cdp.BmeStatementData_OwnerPartyRegisteration_Id 
-		   and dh.BmeStatementData_NtdcDateTime = cdp.BmeStatementData_NtdcDateTime
-		   and dh.BmeStatementData_PartyCategory_Code=cdp.BmeStatementData_OwnerPartyCategory_Code
-		   and dh.BmeStatementData_CongestedZoneID=cdp.BmeStatementData_CongestedZoneID;
-
- */          
-
- 
-
+		
 --update Cap excluding allocation factor
 UPDATE BmeStatementDataHourly
 SET 

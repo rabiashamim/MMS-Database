@@ -1,6 +1,6 @@
 ﻿/****** Object:  Procedure [dbo].[SaveASCSettlementOutputs]    Committed by VersionSQL https://www.versionsql.com ******/
 
-CREATE   Procedure [dbo].[SaveASCSettlementOutputs]
+CREATE   Procedure dbo.SaveASCSettlementOutputs
 
 	@StatementProcessId decimal(18,0),
 	@Month int,
@@ -23,7 +23,7 @@ begin
 
    IF NOT EXISTS(SELECT TOP 1 AscStatementData_Id FROM AscStatementDataGuHourly_SettlementProcess asdghsp WHERE  AscStatementData_Year=@Year and AscStatementData_Month=@Month and AscStatementData_StatementProcessId=@StatementProcessId)
    BEGIN
-
+   /*
 	INSERT INTO [dbo].[BmeStatementDataMpCategoryHourly_SettlementProcess]
 	(
 		[BmeStatementData_NtdcDateTime],
@@ -177,7 +177,7 @@ begin
 		BmeStatementData_Year = @Year
 		AND BmeStatementData_Month = @Month
 		AND BmeStatementData_StatementProcessId=@BmeStatementProcessId
-
+*/
 INSERT INTO [dbo].[AscStatementDataCdpGuParty_SettlementProcess]
 (
 	[AscStatementData_GuPartyRegisteration_Id]
@@ -397,6 +397,7 @@ INSERT INTO [dbo].[AscStatementDataGuHourly_SettlementProcess]
 	,[AscStatementData_IG_AC]
 	,[AscStatementData_MR_UPC]
 	,[AscStatementData_StatementProcessId]
+	--,[AscStatementData_RG_AC_WithNegativeValues]
 	,[AscStatementData_SettlementProcessId]
 )
 
@@ -460,6 +461,7 @@ SELECT
 	,[AscStatementData_IG_AC]
 	,[AscStatementData_MR_UPC]
 	,[AscStatementData_StatementProcessId]
+	--,[AscStatementData_RG_AC_WithNegativeValues]
 	,@StatementProcessId
 FROM 
 	[dbo].[AscStatementDataGuHourly]
@@ -622,8 +624,12 @@ INSERT INTO [dbo].[AscStatementDataMpZoneMonthly_SettlementProcess]
 	,[AscStatementData_RECEIVABLE]
 	,AscStatementData_ES
 	,AscStatementData_TP_SOLR
+	,AscStatementData_SOLR_ETB_Legacy
+	,AscStatementData_LegacyShareInReceiveable
 	,[AscStatementData_StatementProcessId]
+	
 	,[AscStatementData_SettlementProcessId]
+	
 )
 
 SELECT 
@@ -645,7 +651,10 @@ SELECT
 	,[AscStatementData_RECEIVABLE]
 	,AscStatementData_ES
 	,AscStatementData_TP_SOLR
+	,AscStatementData_SOLR_ETB_Legacy
+	,AscStatementData_LegacyShareInReceiveable
 	,[AscStatementData_StatementProcessId]
+	
 	,@StatementProcessId
 FROM 
 	[dbo].[AscStatementDataMpZoneMonthly]

@@ -1,8 +1,6 @@
 ﻿/****** Object:  Table [dbo].[BmeStatementDataCdpHourly_SettlementProcess]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[BmeStatementDataCdpHourly_SettlementProcess](
+CREATE TABLE dbo.BmeStatementDataCdpHourly_SettlementProcess(
 	[BmeStatementData_Id] [decimal](18, 0) IDENTITY(1,1) NOT NULL,
 	[BmeStatementData_NtdcDateTime] [datetime] NULL,
 	[BmeStatementData_Year] [int] NOT NULL,
@@ -51,7 +49,9 @@ CREATE TABLE [dbo].[BmeStatementDataCdpHourly_SettlementProcess](
 	[BmeStatementData_StatementProcessId] [decimal](18, 0) NULL,
 	[BmeStatementData_SettlementProcessId] [decimal](18, 0) NULL,
 	[BmeStatementData_CongestedZone] [nvarchar](50) NULL,
-	[IsBackfeedInclude] [bit] NOT NULL
+	[IsBackfeedInclude] [bit] NOT NULL,
+	[BmeStatementData_IsActualGenerationUnit] [bit] NULL
 ) ON [PRIMARY]
 
-ALTER TABLE [dbo].[BmeStatementDataCdpHourly_SettlementProcess] ADD  DEFAULT ((1)) FOR [IsBackfeedInclude]
+ALTER TABLE dbo.BmeStatementDataCdpHourly_SettlementProcess ADD  DEFAULT ((1)) FOR [IsBackfeedInclude]
+ALTER TABLE dbo.BmeStatementDataCdpHourly_SettlementProcess ADD  DEFAULT ((0)) FOR [BmeStatementData_IsActualGenerationUnit]

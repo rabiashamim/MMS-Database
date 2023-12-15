@@ -1,8 +1,6 @@
 ﻿/****** Object:  Table [dbo].[BmeStatementDataCdpHourly]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[BmeStatementDataCdpHourly](
+CREATE TABLE dbo.BmeStatementDataCdpHourly(
 	[BmeStatementData_Id] [decimal](18, 0) IDENTITY(1,1) NOT NULL,
 	[BmeStatementData_NtdcDateTime] [datetime] NOT NULL,
 	[BmeStatementData_Year] [int] NOT NULL,
@@ -51,6 +49,7 @@ CREATE TABLE [dbo].[BmeStatementDataCdpHourly](
 	[BmeStatementData_StatementProcessId] [decimal](18, 0) NOT NULL,
 	[BmeStatementData_CongestedZone] [nvarchar](50) NULL,
 	[IsBackfeedInclude] [bit] NOT NULL,
+	[BmeStatementData_IsActualGenerationUnit] [bit] NULL,
  CONSTRAINT [PK_BmeStatementDataCdpHourly] PRIMARY KEY CLUSTERED 
 (
 	[BmeStatementData_NtdcDateTime] ASC,
@@ -59,4 +58,5 @@ CREATE TABLE [dbo].[BmeStatementDataCdpHourly](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 
-ALTER TABLE [dbo].[BmeStatementDataCdpHourly] ADD  DEFAULT ((1)) FOR [IsBackfeedInclude]
+ALTER TABLE dbo.BmeStatementDataCdpHourly ADD  DEFAULT ((1)) FOR [IsBackfeedInclude]
+ALTER TABLE dbo.BmeStatementDataCdpHourly ADD  DEFAULT ((0)) FOR [BmeStatementData_IsActualGenerationUnit]

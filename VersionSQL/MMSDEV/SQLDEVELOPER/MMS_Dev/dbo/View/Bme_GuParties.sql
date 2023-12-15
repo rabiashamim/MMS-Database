@@ -7,7 +7,7 @@
 -- Description: 
 --              
 -- ============================================= 
-CREATE VIEW  [dbo].[Bme_GuParties]
+CREATE   View   dbo.Bme_GuParties
 AS
 
 SELECT  distinct
@@ -28,6 +28,7 @@ SELECT  distinct
       ,Gu.[MtGenerationUnit_UnitName]
       ,Gu.[MtGenerationUnit_SOUnitId]
       ,Gu.[MtGenerationUnit_IsEnergyImported]
+	  ,GU.Lu_CapUnitGenVari_Id
 	  ,RU.RuCDPDetail_TaxZoneID
 	  ,RU.RuCDPDetail_CongestedZoneID
 	  ,G.MtGenerator_Name

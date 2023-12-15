@@ -8,7 +8,7 @@
 --              
 -- Parameters: @Year, @Month, @StatementProcessId
 -- ============================================= 
-CREATE   Procedure  [dbo].[ASC_Step2Perform](			 
+CREATE   Procedure  dbo.ASC_Step2Perform(			 
 			@Year int,
 			@Month int
 			,@StatementProcessId decimal(18,0)
@@ -19,7 +19,7 @@ BEGIN
 BEGIN TRY    
    IF EXISTS(SELECT TOP 1 AscStatementData_Id FROM AscStatementDataGuHourly WHERE  AscStatementData_Year=@Year and AscStatementData_Month=@Month and AscStatementData_StatementProcessId=@StatementProcessId)
    BEGIN
-
+   /*
 UPDATE [AscStatementDataGuHourly] 
 	set 
 
@@ -50,7 +50,7 @@ UPDATE [AscStatementDataGuHourly]
 	 and AD.MtSOFileMaster_Id= dbo.GetMtSoFileMasterId(@StatementProcessId, 1) AND
      GH.AscStatementData_Year = @Year and GH.AscStatementData_Month = @Month and GH.AscStatementData_StatementProcessId = @StatementProcessId
 
-
+	 */
 SELECT 1 AS [IS_VALID], @@ROWCOUNT AS [ROW_COUNT], OBJECT_NAME(@@PROCID) AS [SP_NAME];
  END
  ELSE

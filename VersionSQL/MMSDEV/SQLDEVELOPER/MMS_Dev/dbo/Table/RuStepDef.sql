@@ -1,9 +1,7 @@
 ﻿/****** Object:  Table [dbo].[RuStepDef]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[RuStepDef](
-	[RuStepDef_ID] [decimal](18, 0) NOT NULL,
+CREATE TABLE dbo.RuStepDef(
+	[RuStepDef_ID] [decimal](18, 0) IDENTITY(1,1) NOT NULL,
 	[RuStepDef_Name] [nvarchar](max) NULL,
 	[RuStepDef_StepType] [nvarchar](50) NULL,
 	[RuStepDef_ActionType] [nvarchar](50) NULL,
@@ -29,7 +27,7 @@ CREATE TABLE [dbo].[RuStepDef](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
-ALTER TABLE [dbo].[RuStepDef] ADD  DEFAULT ((0)) FOR [RuStepDef_IsDeleted]
-ALTER TABLE [dbo].[RuStepDef]  WITH CHECK ADD  CONSTRAINT [FK_StepDef_ProcessDef] FOREIGN KEY([SrProcessDef_ID])
+ALTER TABLE dbo.RuStepDef ADD  CONSTRAINT [DF__RuStepDef__RuSte__5DF5D7ED]  DEFAULT ((0)) FOR [RuStepDef_IsDeleted]
+ALTER TABLE dbo.RuStepDef  WITH CHECK ADD  CONSTRAINT [FK_StepDef_ProcessDef] FOREIGN KEY([SrProcessDef_ID])
 REFERENCES [dbo].[SrProcessDef] ([SrProcessDef_ID])
-ALTER TABLE [dbo].[RuStepDef] CHECK CONSTRAINT [FK_StepDef_ProcessDef]
+ALTER TABLE dbo.RuStepDef CHECK CONSTRAINT [FK_StepDef_ProcessDef]

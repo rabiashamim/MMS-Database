@@ -8,9 +8,9 @@
 --======================================================================
 --Truncate Table [dbo].[InterfaceRuCdpMeters]
 -- Select * from [dbo].[InterfaceRuCdpMeters]
--- [dbo].[ImportMeterDataFromAPI]
+-- dbo.ImportMeterDataFromAPI
 
-CREATE PROCEDURE [dbo].[ImportMeterDataFromAPI]
+CREATE PROCEDURE dbo.ImportMeterDataFromAPI
 
 AS
 BEGIN
@@ -38,7 +38,10 @@ TRUNCATE table InterfaceRuCdpMeters
 
 drop TABLE if EXISTS #temp
 
-SELECT          b.cdpId , b.meterId ,  CONVERT(decimal(18,0), CAST( b.meterNo AS FLOAT)) as  meterNo , b.status  , b.meterQualifier , b.meterModelType , b.lat , b.lng   , b.meterType , b.effectiveFrom  , b.effectiveTo , b.createdDateTime  , b.cdpUpdateTimestamp 
+SELECT          b.cdpId , b.meterId 
+--,  CONVERT(decimal(18,0), CAST( b.meterNo AS FLOAT)) as  meterNo 
+,CASE WHEN b.meterNo NOT LIKE '%[^0-9]%' THEN CAST(b.meterNo as FLOAT) ELSE 0 END  AS meterNo
+, b.status  , b.meterQualifier , b.meterModelType , b.lat , b.lng   , b.meterType , b.effectiveFrom  , b.effectiveTo , b.createdDateTime  , b.cdpUpdateTimestamp 
 
 into #temp
 FROM OPENJSON((SELECT * FROM @json))  
@@ -101,7 +104,9 @@ INSERT INTO [dbo].[InterfaceRuCdpMeters]
            ,[InterfaceRuCdpMeters_CreatedOn]
            ,[InterfaceRuCdpMeters_IsDeleted])
 
-		   SELECT meterId ,  cdpId ,  meterNo , status  , meterQualifier , meterModelType , lat , lng   , meterType , effectiveFrom  , effectiveTo , createdDateTime  , cdpUpdateTimestamp , GETUTCDATE(),0 from #temp1
+		   SELECT meterId ,  cdpId ,  meterNo , status  
+		   , meterQualifier , meterModelType , lat , lng   , meterType , effectiveFrom  , effectiveTo , createdDateTime  , cdpUpdateTimestamp , GETUTCDATE(),0 from #temp1
+		   where cdpId is not null
 Exec [dbo].[ImportandUpdateInMMSRuCdpMeter]
 
 END

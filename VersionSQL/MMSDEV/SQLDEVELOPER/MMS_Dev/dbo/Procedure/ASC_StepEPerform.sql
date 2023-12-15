@@ -6,7 +6,7 @@
 -- Description:	<Description,,>
 -- =============================================
 --    [dbo].[ASC_Step1Perform] 2021,11
-CREATE   Procedure [dbo].[ASC_StepEPerform](			 
+CREATE   Procedure dbo.ASC_StepEPerform(			 
 			@Year int,
 			@Month int
 			,@StatementProcessId decimal(18,0)
@@ -51,14 +51,14 @@ drop Table if Exists #TempContractSellers
 
 Select distinct C.BmeStatementData_SellerPartyRegisteration_Id 
 INTO #TempContractSellers
-From BmeStatementDataMpContractHourly C WHERE c.BmeStatementData_BuyerPartyRegisteration_Id = @PowerPoolRegisterationId
+From BmeStatementDataMpContractHourly_SettlementProcess  C WHERE c.BmeStatementData_BuyerPartyRegisteration_Id = @PowerPoolRegisterationId
  AND C.BmeStatementData_Year=@Year and C.BmeStatementData_Month=@Month and C.BmeStatementData_StatementProcessId=@BmeStatementProcessId;
 
 drop Table if Exists #TempContractBuyers
 
 Select distinct C.BmeStatementData_BuyerPartyRegisteration_Id 
 INTO #TempContractBuyers
-From BmeStatementDataMpContractHourly C WHERE c.BmeStatementData_SellerPartyRegisteration_Id  = @PowerPoolRegisterationId
+From BmeStatementDataMpContractHourly_SettlementProcess  C WHERE c.BmeStatementData_SellerPartyRegisteration_Id  = @PowerPoolRegisterationId
  AND C.BmeStatementData_Year=@Year and C.BmeStatementData_Month=@Month and C.BmeStatementData_StatementProcessId=@BmeStatementProcessId;
 
 
@@ -88,12 +88,32 @@ MZM.AscStatementData_CongestedZoneID=T.AscStatementData_CongestedZoneID
 WITH POWERPOOL_ES_BS_CTE
 AS
 (
-    SELECT C.AscStatementData_CongestedZoneID, SUM(C.AscStatementData_ES) as ES_BS FROM AscStatementDataMpZoneMonthly C 
+/*
+    SELECT C.AscStatementData_CongestedZoneID
+    , SUM(C.AscStatementData_ES) as ES_BS 
+	FROM AscStatementDataMpZoneMonthly C 
     WHERE  C.AscStatementData_Year=@Year and C.AscStatementData_Month=@Month and C.AscStatementData_StatementProcessId=@StatementProcessId
      and C.AscStatementData_PartyRegisteration_Id IN(SELECT TB.BmeStatementData_BuyerPartyRegisteration_Id FROM #TempContractBuyers TB
     -- where TB.BmeStatementData_BuyerPartyRegisteration_Id<>@KE_RegisterationId
+	*/
+	SELECT ZM.AscStatementData_CongestedZoneID
+    --, SUM(C.AscStatementData_ES) as ES_BS 
+	, SUM(BM.BmeStatementData_EnergySuppliedActual) as ES_BS 
+	FROM AscStatementDataMpZoneMonthly ZM
+	JOIN BmeStatementDataMpMonthly_SettlementProcess  BM ON ZM.AscStatementData_PartyRegisteration_Id=BM.BmeStatementData_PartyRegisteration_Id
+    WHERE  
+	ZM.AscStatementData_Year=@Year 
+	and ZM.AscStatementData_Month=@Month 
+	and ZM.AscStatementData_StatementProcessId=@StatementProcessId
+	AND BM.BmeStatementData_Year=@Year 
+	and BM.BmeStatementData_Month=@Month 
+	and BM.BmeStatementData_SettlementProcessId=@BmeStatementProcessId
+    and ZM.AscStatementData_PartyRegisteration_Id 
+	IN(SELECT TB.BmeStatementData_BuyerPartyRegisteration_Id FROM #TempContractBuyers TB
+    -- where TB.BmeStatementData_BuyerPartyRegisteration_Id<>@KE_RegisterationId
+
      )       
-    GROUP by C.AscStatementData_CongestedZoneID
+    GROUP by ZM.AscStatementData_CongestedZoneID
 )
 
 UPDATE AscStatementDataZoneMonthly set AscStatementData_ES_BS=T.ES_BS
@@ -104,7 +124,7 @@ INNER JOIN POWERPOOL_ES_BS_CTE T ON MZM.AscStatementData_CongestedZoneID=T.AscSt
   
 DECLARE @KE_EB DECIMAL(25,13)=NULL;
 
-SET @KE_EB=(select SUM(C.BmeStatementData_EnergyTradedBought)  from BmeStatementDataMpContractHourly c WHERE c.BmeStatementData_StatementProcessId=@BmeStatementProcessId and c.BmeStatementData_SellerPartyRegisteration_Id=@PowerPoolRegisterationId and c.BmeStatementData_BuyerPartyRegisteration_Id=@KE_RegisterationId);
+SET @KE_EB=(select SUM(C.BmeStatementData_EnergyTradedBought)  from BmeStatementDataMpContractHourly_SettlementProcess  c WHERE c.BmeStatementData_StatementProcessId=@BmeStatementProcessId and c.BmeStatementData_SellerPartyRegisteration_Id=@PowerPoolRegisterationId and c.BmeStatementData_BuyerPartyRegisteration_Id=@KE_RegisterationId);
 
 WITH POWERPOOL_KE_ES_CTE
 AS
@@ -113,10 +133,12 @@ AS
     isnull( CASE 
       WHEN  Exists(select top (1) 1 from #Temp_EPs_SPs_MP_KE P where  P.PartyRegisteration_Id=CDP.BmeStatementData_ToPartyRegisteration_Id)  
 	    THEN
-	    ISNULL(CDP.BmeStatementData_IncEnergyExport,0)
+	    --ISNULL(CDP.BmeStatementData_IncEnergyExport,0)
+		ISNULL(CDP.BmeStatementData_IncEnergyExport,0)-ISNULL(CDP.BmeStatementData_IncEnergyImport,0)
 	  WHEN  Exists(select top (1) 1 from #Temp_EPs_SPs_MP_KE P where  P.PartyRegisteration_Id=CDP.BmeStatementData_FromPartyRegisteration_Id)  
 	    THEN
-	        ISNULL(CDP.BmeStatementData_IncEnergyImport,0) 
+	        --ISNULL(CDP.BmeStatementData_IncEnergyImport,0) 
+			ISNULL(CDP.BmeStatementData_IncEnergyImport,0) - ISNULL(CDP.BmeStatementData_IncEnergyExport,0) 
        
         end,0) * (1.0 + DH.BmeStatementData_UpliftTransmissionLosses) AS KE_ES
    from BmeStatementDataCdpContractHourly CH 
@@ -139,13 +161,35 @@ AND AscStatementData_CongestedZoneID=@PowerPool_ZoneIdForKE_ES;
 
 --------------------------
 
+/**task id 3933 * date 27-sep-2023*/
+DECLARE @vBmeStatementData_EnergyTradedBought DECIMAL(25,13)
+DECLARE @vBmeStatementData_LegacyReceiveable DECIMAL(25,13)
+
+
+SELECT  @vBmeStatementData_EnergyTradedBought=SUM(BmeStatementData_EnergyTradedBought) 
+FROM BmeStatementDataMpContractHourly_SettlementProcess    
+WHERE BmeStatementData_StatementProcessId=@BmeStatementProcessId
+AND BmeStatementData_SellerPartyRegisteration_Id=1 -- only for leagacy
+
+
+SELECT
+	@vBmeStatementData_LegacyReceiveable=AscStatementData_RECEIVABLE
+FROM AscStatementDataMpZoneMonthly
+WHERE AscStatementData_StatementProcessId = @StatementProcessId
+AND AscStatementData_PartyRegisteration_Id=1
+
 
 UPDATE AscStatementDataMPZoneMonthly
-SET AscStatementData_TP_SOLR=(MH.AscStatementData_ES * ZM.AscStatementData_TP)
-/NULLIF( ISNULL(ZM.AscStatementData_ES_BS,0), 0)
-,AscStatementData_TR_SOLR=
-(MH.AscStatementData_ES * ZM.AscStatementData_TR)
-/NULLIF( ISNULL(ZM.AscStatementData_ES_BS,0) , 0)
+SET AscStatementData_TP_SOLR=
+(MH.AscStatementData_ET * ZM.AscStatementData_TP)/NULLIF( ISNULL(ZM.AscStatementData_ES_BS,0), 0)
+
+, AscStatementData_SOLR_ETB_Legacy=
+(MH.AscStatementData_ET * ZM.AscStatementData_TP)/NULLIF( ISNULL(@vBmeStatementData_EnergyTradedBought,0), 0)
+
+, AscStatementData_LegacyShareInReceiveable=
+(ISNULL(MH.AscStatementData_ET,0) * @vBmeStatementData_LegacyReceiveable)/NULLIF( ISNULL(@vBmeStatementData_EnergyTradedBought,0), 0)
+
+
 
 FROM AscStatementDataMPZoneMonthly MH 
 INNER JOIN AscStatementDataZoneMonthly ZM
@@ -164,7 +208,7 @@ DECLARE @PowerPool_TR_FOR_KE decimal(25,13)=0;
 SELECT TOP 1 @PowerPool_TP_FOR_KE=ZM.AscStatementData_TP,@PowerPool_TR_FOR_KE=ZM.AscStatementData_TR FROM AscStatementDataZoneMonthly ZM WHERE 
 ZM.AscStatementData_Year=@Year and ZM.AscStatementData_Month=@Month 
 and ZM.AscStatementData_StatementProcessId=@StatementProcessId AND ZM.AscStatementData_CongestedZoneID=@PowerPool_ZoneIdForKE_ES ;
-
+/*
 DECLARE @PowerPool_SUM_TP_SOLR DECIMAL(25,13)=0;
 DECLARE @PowerPool_SUM_TR_SOLR DECIMAL(25,13)=0;
 
@@ -174,7 +218,7 @@ WHERE MZM.AscStatementData_Year=@Year and MZM.AscStatementData_Month=@Month
 and MZM.AscStatementData_StatementProcessId=@StatementProcessId AND MZM.AscStatementData_CongestedZoneID=@PowerPool_ZoneIdForKE_ES
  and MZM.AscStatementData_PartyRegisteration_Id IN(SELECT TB.BmeStatementData_BuyerPartyRegisteration_Id FROM #TempContractBuyers TB
      where TB.BmeStatementData_BuyerPartyRegisteration_Id<>@KE_RegisterationId
-     );
+     );*/
 /*
 UPDATE AscStatementDataMPZoneMonthly
 SET AscStatementData_TP_SOLR=(@PowerPool_TP_FOR_KE - ISNULL(@PowerPool_SUM_TP_SOLR,0))
@@ -198,8 +242,15 @@ as
 	SUM(MH.AscStatementData_RG_AC) AS AscStatementData_RG_AC,
 	SUM(MH.AscStatementData_GS_SC) AS AscStatementData_GS_SC,
 	SUM(MH.AscStatementData_GBS_BSC) AS AscStatementData_GBS_BSC,
-	SUM(ISNULL(MH.AscStatementData_PAYABLE,0) + ISNULL(MH.AscStatementData_TP_SOLR,0)) AS AscStatementData_PAYABLE,
-	SUM(ISNULL(MH.AscStatementData_RECEIVABLE,0) + ISNULL(MH.AscStatementData_TR_SOLR,0) ) AS AscStatementData_RECEIVABLE   
+	--Task Id ** 4092 ** update 24 oct 2023
+	--SUM(ISNULL(MH.AscStatementData_PAYABLE,0) + ISNULL(MH.AscStatementData_TP_SOLR,0)) AS AscStatementData_PAYABLE,
+	--SUM(ISNULL(MH.AscStatementData_RECEIVABLE,0) + ISNULL(MH.AscStatementData_TR_SOLR,0) ) AS AscStatementData_RECEIVABLE   
+	CASE 
+		WHEN MH.AscStatementData_PartyRegisteration_Id=1 THEN 0
+		ELSE SUM(ISNULL(MH.AscStatementData_PAYABLE,0) + ISNULL(MH.AscStatementData_SOLR_ETB_Legacy,0)) END AS AscStatementData_PAYABLE,
+	CASE
+		WHEN MH.AscStatementData_PartyRegisteration_Id=1 THEN 0
+		ELSE SUM(ISNULL(MH.AscStatementData_RECEIVABLE,0) + ISNULL(MH.AscStatementData_LegacyShareInReceiveable,0) ) end AS AscStatementData_RECEIVABLE   
 	from AscStatementDataMpZoneMonthly MH
 	where MH.AscStatementData_Year=@Year and MH.AscStatementData_Month=@Month
      and MH.AscStatementData_StatementProcessId=@StatementProcessId

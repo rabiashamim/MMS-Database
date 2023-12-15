@@ -8,7 +8,7 @@
 --              
 -- Parameters: @Year, @Month, @StatementProcessId
 -- ============================================= 
-CREATE   Procedure [dbo].[BME_Step6Perform](			 
+CREATE   Procedure dbo.BME_Step6Perform(			 
 			@Year int,
 			@Month int
 			,@StatementProcessId decimal(18,0))
@@ -76,6 +76,8 @@ where isnull( g.MtGenerator_IsDeleted,0)=0
 and isnull(gu.MtGenerationUnit_IsDeleted,0)=0
 and isnull(mcm.MtConnectedMeter_isDeleted,0)=0
 AND ISNULL(PC.isDeleted,0)=0
+AND mcm.MtPartyCategory_Id NOT IN (SELECT MtPartyCategory_Id FROM MtPartyCategory MPC WHERE MPC.SrCategory_Code IN ('BPC','EBPC') AND ISNULL(MPC.isDeleted,0)=0);  
+  
 
 --DROP TABLE IF EXISTS #MPWiseGen
 

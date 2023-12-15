@@ -7,7 +7,7 @@
 --Comments : moniter sql jobs
 --======================================================================
 
-CREATE PROCEDURE [dbo].[MoniterSQLJobs]
+CREATE PROCEDURE dbo.MoniterSQLJobs
 AS
 BEGIN
 
@@ -19,6 +19,7 @@ SELECT
 	WHEN ImportMeteringLogs_JobType=1 then 'Meter Master'
 	WHEN ImportMeteringLogs_JobType=2 then 'CDP Master'
 	WHEN ImportMeteringLogs_JobType=3 then 'BVM Hourly'
+	WHEN ImportMeteringLogs_JobType=5 then 'Transmission Losses'
 	else '-'
  END as JobType
 

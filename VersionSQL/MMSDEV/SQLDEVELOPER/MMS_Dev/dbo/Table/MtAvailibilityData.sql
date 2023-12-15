@@ -1,8 +1,6 @@
 ﻿/****** Object:  Table [dbo].[MtAvailibilityData]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[MtAvailibilityData](
+CREATE TABLE dbo.MtAvailibilityData(
 	[MtAvailibilityData_Id] [decimal](18, 0) NOT NULL,
 	[MtSOFileMaster_Id] [decimal](18, 0) NOT NULL,
 	[MtGenerationUnit_Id] [decimal](18, 0) NOT NULL,
@@ -16,11 +14,13 @@ CREATE TABLE [dbo].[MtAvailibilityData](
 	[MtAvailibilityData_ModifiedOn] [datetime] NULL,
 	[MtAvailibilityData_IsDeleted] [bit] NULL,
 	[MtAvailibilityData_RowNumber] [bigint] NULL,
+	[MtAvailibilityData_GeneratingCapacity] [nvarchar](max) NULL,
+	[MtAvailibilityData_SyncStatus] [nvarchar](max) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[MtAvailibilityData_Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
-ALTER TABLE [dbo].[MtAvailibilityData]  WITH CHECK ADD FOREIGN KEY([MtSOFileMaster_Id])
+ALTER TABLE dbo.MtAvailibilityData  WITH CHECK ADD FOREIGN KEY([MtSOFileMaster_Id])
 REFERENCES [dbo].[MtSOFileMaster] ([MtSOFileMaster_Id])

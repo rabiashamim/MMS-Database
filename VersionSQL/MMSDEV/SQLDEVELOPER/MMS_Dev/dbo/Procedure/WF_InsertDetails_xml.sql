@@ -1,6 +1,6 @@
 ﻿/****** Object:  Procedure [dbo].[WF_InsertDetails_xml]    Committed by VersionSQL https://www.versionsql.com ******/
 
-create procedure WF_InsertDetails_xml  
+CREATE procedure dbo.WF_InsertDetails_xml  
 @RuWorkFlowHeader_id int=null,  
 @RuWorkFlowHeader_name nvarchar(256),  
 @RuWorkFlowHeader_description nvarchar(256),  
@@ -16,7 +16,7 @@ if @action_flag=1
   (  
    RuWorkFlowHeader_name  
   ,RuWorkFlowHeader_description  
-  ,RuModules_id  
+  ,RuModulesProcess_Id  
   ,RuWorkFlowHeader_CreatedBy  
   ,RuWorkFlowHeader_CreatedOn  
   )  

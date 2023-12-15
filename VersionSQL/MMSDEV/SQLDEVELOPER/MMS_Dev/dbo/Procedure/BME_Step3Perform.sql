@@ -8,8 +8,8 @@
 --              
 -- Parameters: @Year, @Month, @StatementProcessId
 -- =============================================  
--- [dbo].[BME_Step3Perform] 2021,11,216
-CREATE   Procedure [dbo].[BME_Step3Perform](			 
+-- dbo.BME_Step3Perform 2021,11,216
+CREATE PROCEDURE dbo.BME_Step3Perform(			 
 			@Year int,
 			@Month int
 			,@StatementProcessId decimal(18,0)
@@ -116,8 +116,8 @@ AS
 )
 
 	UPDATE BmeStatementDataTspHourly set BmeStatementData_TransmissionLosses =IsNull(TH.BmeStatementData_TransmissionLosses,0) + (ISNULL(cdp.BmeStatementData_AdjustedEnergyExport,0) - ISNULL(cdp.BmeStatementData_AdjustedEnergyImport,0)),
-	BmeStatementData_AdjustedEnergyImport =IsNull(TH.BmeStatementData_AdjustedEnergyImport,0)+ ISNULL(cdp.BmeStatementData_AdjustedEnergyImport,0),
-	BmeStatementData_AdjustedEnergyExport =IsNull(TH.BmeStatementData_AdjustedEnergyExport,0)+ ISNULL(cdp.BmeStatementData_AdjustedEnergyExport,0)
+	BmeStatementData_AdjustedEnergyImport =IsNull(TH.BmeStatementData_AdjustedEnergyImport,0)+ ISNULL(cdp.BmeStatementData_AdjustedEnergyExport,0),
+	BmeStatementData_AdjustedEnergyExport =IsNull(TH.BmeStatementData_AdjustedEnergyExport,0)+ ISNULL(cdp.BmeStatementData_AdjustedEnergyImport,0)
 	FROM BmeStatementDataTspHourly TH
 	INNER JOIN TO_TSP_ENERGY_CTE as cdp on 
     TH.BmeStatementData_StatementProcessId=cdp.BmeStatementData_StatementProcessId 

@@ -1,8 +1,8 @@
 ﻿/****** Object:  Procedure [dbo].[AggregatedStepsOutputView]    Committed by VersionSQL https://www.versionsql.com ******/
 
--- [dbo].AggregatedStepsOutputView 41,2
+-- dbo.AggregatedStepsOutputView 41,2
 
-CREATE PROCEDURE [dbo].[AggregatedStepsOutputView] 
+CREATE   PROCEDURE dbo.AggregatedStepsOutputView 
 @pSettlementProcessId INT
 ,@pStepId INT
 --DECLARE @pSettlementProcessId INT = 41
@@ -111,8 +111,10 @@ BEGIN
 	   ,SDA.StatementDataAggregated_PartyName AS [Party Name]
 	   ,ISNULL(SDA.StatementDataAggregated_BmeStatementData_AmountPayableReceivable,0) AS [BME Charges]
 	   ,ISNULL(SDA.StatementDataAggregated_AscStatementData_PAYABLE,0) AS [ASC Payable]
-	   ,SDA.StatementDataAggregated_AscStatementData_RECEIVABLE AS [ASC Receivable]
-	   ,ISNULL(SDA.StatementDataAggregated_BmeStatementData_AmountPayableReceivable, 0) + ISNULL(SDA.StatementDataAggregated_AscStatementData_PAYABLE, 0) + ISNULL(SDA.StatementDataAggregated_AscStatementData_RECEIVABLE, 0) AS [Net Amount]
+	   ,ISNULL(SDA.StatementDataAggregated_AscStatementData_RECEIVABLE,0) AS [ASC Receivable]
+
+	  --,ISNULL(SDA.StatementDataAggregated_BmeStatementData_AmountPayableReceivable, 0) + ISNULL(SDA.StatementDataAggregated_AscStatementData_PAYABLE, 0) + ISNULL(SDA.StatementDataAggregated_AscStatementData_RECEIVABLE, 0) AS [Net Amount]
+	  ,ISNULL(SDA.StatementDataAggregated_BmeStatementData_AmountPayableReceivable, 0) + ISNULL(SDA.StatementDataAggregated_AscStatementData_PAYABLE, 0) - ISNULL(SDA.StatementDataAggregated_AscStatementData_RECEIVABLE, 0) AS [Net Amount]
 	   ,CONCAT(AE.StatementDataAggregated_Year ,'-',DATENAME(MONTH,DATEFROMPARTS(AE.StatementDataAggregated_Year,AE.StatementDataAggregated_Month,1)) ) AS ESSMonthName	   
 	   ,AE.AdjustmentESS 
        INTO #tempAdjustedESSFinal 

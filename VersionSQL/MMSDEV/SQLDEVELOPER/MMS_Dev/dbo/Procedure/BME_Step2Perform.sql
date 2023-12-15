@@ -11,8 +11,8 @@
 --              
 -- Parameters: @Year, @Month, @StatementProcessId  
 -- =============================================  
--- [dbo].[BME_Step2Perform] 2022,5,9
-CREATE   Procedure [dbo].[BME_Step2Perform](			 
+-- dbo.BME_Step2Perform 2022,5,9
+CREATE PROCEDURE dbo.BME_Step2Perform(			 
 			@Year int,
 			@Month int
 			,@StatementProcessId decimal(18,0)
@@ -24,11 +24,12 @@ BEGIN
 	SET NOCOUNT ON;
 BEGIN TRY
 DECLARE @MONTH_EFFECTIVE_FROM as DATETIME = DATETIMEFROMPARTS(@Year,@Month,1,0,0,0,0);
-DECLARE @MONTH_EFFECTIVE_TO as DATETIME = DATEADD(MONTH,1,@MONTH_EFFECTIVE_FROM);
+DECLARE @MONTH_EFFECTIVE_TO as DATETIME = EOMonth(@MONTH_EFFECTIVE_FROM);
 
  IF EXISTS(SELECT TOP 1 BmeStatementData_Id FROM BmeStatementDataCdpHourly WHERE  BmeStatementData_Year=@Year and BmeStatementData_Month=@Month and BmeStatementData_StatementProcessId=@StatementProcessId)
     BEGIN
 
+EXECUTE [dbo].[BME_ValidateDistributionLossFactor] @Year,@Month,@StatementProcessId
 /*
 if (ConnectedTo == TSP) or (ConnectedFrom == TSP)
       adj_E_Export = Energy_Export (BVM)
@@ -59,6 +60,42 @@ if {ConnectedFrom =DSP
 				  or ISNULL(IsBackfeedInclude,0)=0
 				  );
 
+
+
+/*************************************************************
+	Distribution Loss Changes
+**************************************************************/
+DROP TABLE IF EXISTS #tempDistLosses
+DROP TABLE IF EXISTS #tempDistLossSum
+
+select Lu_LineVoltage_Name
+,DL.Lu_DistLosses_LineVoltage
+,Lu_LineVoltage_Level
+,Lu_DistLosses_Factor
+,MtPartyRegisteration_Id
+,Lu_DistLosses_EffectiveFrom
+,Lu_DistLosses_EffectiveTo
+into #tempDistLosses
+from Lu_DistLosses DL join Lu_LineVoltage LV
+on cast(LV.Lu_LineVoltage_Name as VARCHAR(20))=cast(DL.Lu_DistLosses_LineVoltage as VARCHAR(20))
+WHERE   (	@MONTH_EFFECTIVE_FROM >= DL.Lu_DistLosses_EffectiveFrom
+  OR  DL.Lu_DistLosses_EffectiveFrom  BETWEEN @MONTH_EFFECTIVE_FROM AND @MONTH_EFFECTIVE_TO  )
+
+	  and ISNULL(DL.Lu_DistLosses_EffectiveTo,@MONTH_EFFECTIVE_TO)>=@MONTH_EFFECTIVE_TO;
+	   
+ 
+
+select 
+t1.MtPartyRegisteration_Id
+--,t1.Lu_LineVoltage_Name
+,t1.Lu_DistLosses_LineVoltage
+,Lu_DistLosses_EffectiveFrom
+,Lu_DistLosses_EffectiveTo
+--,t1.Lu_LineVoltage_Level
+--,t1.Lu_DistLosses_Factor
+,(select sum(t2.Lu_DistLosses_Factor) from #tempDistLosses t2 where t2.MtPartyRegisteration_Id=t1.MtPartyRegisteration_Id and t2.Lu_LineVoltage_Level<=t1.Lu_LineVoltage_Level) as Lu_DistLosses_Factor
+into #tempDistLossSum
+from #tempDistLosses t1
 ------------------------------------------------------------------------------------------------------------
 	
 	UPDATE dbo.BmeStatementDataCdpHourly SET 
@@ -68,14 +105,12 @@ if {ConnectedFrom =DSP
 	,BmeStatementData_AdjustedEnergyExport=cdp.BmeStatementData_IncEnergyExport/NULLIF(1 - toDL.Lu_DistLosses_Factor/100.0,0)
     FROM  dbo.BmeStatementDataCdpHourly as cdp                 
 				  inner JOIN
-                  dbo.Lu_DistLosses as toDL ON cdp.BmeStatementData_FromPartyRegisteration_Id = toDL.MtPartyRegisteration_Id 
+                 #tempDistLossSum as toDL ON cdp.BmeStatementData_FromPartyRegisteration_Id = toDL.MtPartyRegisteration_Id 
 				  and cdp.BmeStatementData_LineVoltage = toDL.Lu_DistLosses_LineVoltage
 				  where CDP.BmeStatementData_Year=@Year and CDP.BmeStatementData_Month=@Month 
 				  and CDP.BmeStatementData_StatementProcessId=@StatementProcessId 
 				  AND ISNULL(cdp.IsBackfeedInclude,0)=1
 				  AND BmeStatementData_FromPartyCategory_Code='DSP' and BmeStatementData_ToPartyCategory_Code <>'TSP' --and BmeStatementData_ToPartyCategory_Code ='DSP'
-				  and cdp.BmeStatementData_NtdcDateTime>=toDL.Lu_DistLosses_EffectiveFrom 
-				  and cdp.BmeStatementData_NtdcDateTime<=ISNULL(toDL.Lu_DistLosses_EffectiveTo,@MONTH_EFFECTIVE_TO)
                   ;
 
 	------------------------------------------------------------------------------------------
@@ -98,7 +133,7 @@ if {ConnectedFrom =DSP
 	
     FROM  dbo.BmeStatementDataCdpHourly as cdp                 
 				  inner JOIN
-                  dbo.Lu_DistLosses as toDL ON cdp.BmeStatementData_ToPartyRegisteration_Id = toDL.MtPartyRegisteration_Id 
+                  dbo.#tempDistLossSum as toDL ON cdp.BmeStatementData_ToPartyRegisteration_Id = toDL.MtPartyRegisteration_Id 
 				  and cdp.BmeStatementData_LineVoltage = toDL.Lu_DistLosses_LineVoltage
 				  where CDP.BmeStatementData_Year=@Year and CDP.BmeStatementData_Month=@Month
 				  and CDP.BmeStatementData_StatementProcessId=@StatementProcessId 
@@ -106,8 +141,7 @@ if {ConnectedFrom =DSP
 				  AND BmeStatementData_ToPartyCategory_Code='DSP' 
 				  AND ISNULL(cdp.IsBackfeedInclude,0)=1
 				  and BmeStatementData_FromPartyCategory_Code <>'TSP' --and BmeStatementData_FromPartyCategory_Code ='DSP'
-				  and cdp.BmeStatementData_NtdcDateTime>=toDL.Lu_DistLosses_EffectiveFrom 
-				  and cdp.BmeStatementData_NtdcDateTime<=ISNULL(toDL.Lu_DistLosses_EffectiveTo,@MONTH_EFFECTIVE_TO);
+;
 
 ------------------------------
 
@@ -125,10 +159,10 @@ EXEC [dbo].[BME_Step2APerform] @Year,@Month,@StatementProcessId;
 
 SELECT 1 AS [IS_VALID], @@ROWCOUNT AS [ROW_COUNT], OBJECT_NAME(@@PROCID) AS [SP_NAME];
  END
- ELSE
- BEGIN
- SELECT 0 AS [IS_VALID], OBJECT_NAME(@@PROCID) AS [SP_NAME];
- END 
+ --ELSE
+ --BEGIN
+ --SELECT 0 AS [IS_VALID], OBJECT_NAME(@@PROCID) AS [SP_NAME];
+ --END 
  END TRY
 BEGIN CATCH
   SELECT

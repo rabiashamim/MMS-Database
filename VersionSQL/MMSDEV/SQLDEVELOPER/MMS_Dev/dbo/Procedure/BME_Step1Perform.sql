@@ -10,8 +10,8 @@
 --              
 -- Parameters: @Year, @Month, @StatementProcessId  
 -- =============================================  
- -- [dbo].[BME_Step1Perform] 2022,5,9
-CREATE   Procedure [dbo].[BME_Step1Perform](			 
+ -- dbo.BME_Step1Perform 2022,5,9
+CREATE   PROCEDURE dbo.BME_Step1Perform(			 
 			@Year INT ,
 			@Month int
 			,@StatementProcessId decimal(18,0)
@@ -83,6 +83,18 @@ SELECT cdp.RuCDPDetail_Id, cdp.RuCDPDetail_CdpId, cdp.RuCDPDetail_LineVoltage, f
                  ,cdp.RuCDPDetail_CongestedZoneID
                  ,cz.MtCongestedZone_Name
                  ,cdp.IsBackfeedInclude
+
+/* Task Id 1623 * Add Column */
+				  , ISNULL
+                     ((SELECT TOP (1) 1 AS Expr1
+                        FROM      dbo.Bme_GuParties as BGU
+                        WHERE   (
+						BGU.MtGenerationUnit_Id IN
+						(SELECT MtConnectedMeter_UnitId FROM #tempCM WHERE MtCDPDetail_Id=cdp.RuCDPDetail_Id)
+								) 
+						AND (ISNULL(BGU.Lu_CapUnitGenVari_Id,0) =3)
+						), 0) AS IsActualGeneration
+	
                  ,ISNULL
                      ((SELECT TOP (1) 1 AS Expr1
                         FROM      dbo.Bme_GuParties as BGU
@@ -261,7 +273,11 @@ SELECT
        ,CDP.MtCongestedZone_Name
       FROM 
    	  #tempCDPOwnerParty as cdp
-      WHERE cdp.EffectiveFrom<=@MONTH_EFFECTIVE_FROM and ISNULL(cdp.EffectiveTo,@MONTH_EFFECTIVE_TO)>=@MONTH_EFFECTIVE_TO;
+      WHERE-- cdp.EffectiveFrom<=@MONTH_EFFECTIVE_FROM 
+	  (	@MONTH_EFFECTIVE_FROM >= cdp.EffectiveFrom  
+  OR  cdp.EffectiveFrom  BETWEEN @MONTH_EFFECTIVE_FROM AND @MONTH_EFFECTIVE_TO  )
+
+	  and ISNULL(cdp.EffectiveTo,@MONTH_EFFECTIVE_TO)>=@MONTH_EFFECTIVE_TO;
 	 
 -------------------------------------------------------------
 	   
@@ -370,6 +386,7 @@ INSERT INTO BmeStatementDataCdpHourly (
 	  ,BmeStatementData_IsThermal
       ,BmeStatementData_IsLegacy
 	  ,IsBackfeedInclude
+	  ,BmeStatementData_IsActualGenerationUnit
       )
       
       SELECT 
@@ -408,10 +425,15 @@ INSERT INTO BmeStatementDataCdpHourly (
 	  ,cdp.IsThermal
       ,cdp.IsLegacy
 	  ,cdp.IsBackfeedInclude
+	  ,cdp.IsActualGeneration
       FROM MtBvmReading  INNER JOIN
       #tempCDPParty as cdp on MtBvmReading.RuCDPDetail_CdpId=cdp.RuCDPDetail_CdpId WHERE  DATEPART(YEAR, MtBvmReading_ReadingDate)=@Year AND DATEPART(MONTH, MtBvmReading_ReadingDate)=@Month
-     AND cdp.RuCDPDetail_EffectiveFrom<=@MONTH_EFFECTIVE_FROM and ISNULL(cdp.RuCDPDetail_EffectiveTo,@MONTH_EFFECTIVE_TO)>=@MONTH_EFFECTIVE_TO;
-	 
+    AND --(cdp.RuCDPDetail_EffectiveFrom<=@MONTH_EFFECTIVE_FROM )
+(	@MONTH_EFFECTIVE_FROM >= cdp.RuCDPDetail_EffectiveFrom  
+  OR  cdp.RuCDPDetail_EffectiveFrom  BETWEEN @MONTH_EFFECTIVE_FROM AND @MONTH_EFFECTIVE_TO  )
+  
+	and ISNULL(cdp.RuCDPDetail_EffectiveTo,@MONTH_EFFECTIVE_TO)>=@MONTH_EFFECTIVE_TO;
+	 -- AND ISNULL(cdp.RuCDPDetail_EffectiveFrom,@MONTH_EFFECTIVE_FROM)<=@MONTH_EFFECTIVE_FROM and ISNULL(cdp.RuCDPDetail_EffectiveTo,@MONTH_EFFECTIVE_TO)>=@MONTH_EFFECTIVE_TO;
 
 ------------------------------------
 	  	  --update legacy bit in owner
@@ -439,6 +461,55 @@ where cdph.BmeStatementData_CdpId=cdpo.BmeStatementData_CdpId
 from BmeStatementDataCdpHourly CDPH
  WHERE  CDPH.BmeStatementData_Year=@Year and CDPH.BmeStatementData_Month=@Month and CDPH.BmeStatementData_StatementProcessId=@StatementProcessId
 */
+
+
+
+/**********************************************************************************************************************************************************************/
+-- 1. Fetching Data for CDP , Generator and Unit
+/**********************************************************************************************************************************************************************/
+INSERT INTO BmeStatementDataCDPGenUnit (
+  RuCDPDetail_CdpId, BmeStatementDataـGenName, 
+  MtGenerator_Id, MtGenerationUnit_Id, 
+  MtGenerationUnit_SOUnitId, SrTechnologyType_Code, 
+  MtGenerationUnit_InstalledCapacity_KW, 
+  Lu_CapUnitGenVari_Id, BmeStatementData_StatementProcessId
+) 
+SELECT 
+  DISTINCT cdp.RuCDPDetail_CdpId, 
+  g.MtGenerator_Name, 
+  g.MtGenerator_Id, 
+  gu.MtGenerationUnit_Id, 
+  gu.MtGenerationUnit_SOUnitId, 
+  gu.[SrTechnologyType_Code], 
+  gu.MtGenerationUnit_InstalledCapacity_KW, 
+  gu.Lu_CapUnitGenVari_Id, 
+  @StatementProcessId 
+FROM 
+  MtGenerator g 
+  INNER JOIN MtGenerationUnit gu ON gu.MtGenerator_Id = g.MtGenerator_Id 
+  INNER JOIN MtConnectedMeter mcm ON mcm.MtConnectedMeter_UnitId = gu.MtGenerationUnit_Id 
+  INNER JOIN RuCDPDetail cdp ON cdp.RuCDPDetail_Id = mcm.MtCDPDetail_Id 
+WHERE 
+  ISNULL(g.MtGenerator_IsDeleted, 0) = 0 
+  AND ISNULL(
+    gu.MtGenerationUnit_IsDeleted, 0
+  ) = 0 
+  AND ISNULL(
+    mcm.MtConnectedMeter_isDeleted, 
+    0
+  ) = 0 
+  AND ISNULL(g.isDeleted, 0) = 0 
+  AND mcm.MtPartyCategory_Id NOT IN (
+    SELECT 
+      MtPartyCategory_Id 
+    FROM 
+      MtPartyCategory MPC 
+    WHERE 
+      MPC.SrCategory_Code = 'BPC' 
+      AND ISNULL(MPC.isDeleted, 0) = 0
+  );
+
+
 SELECT 1 AS [IS_VALID], @@ROWCOUNT AS [ROW_COUNT], OBJECT_NAME(@@PROCID) AS [SP_NAME];
  END
  ELSE

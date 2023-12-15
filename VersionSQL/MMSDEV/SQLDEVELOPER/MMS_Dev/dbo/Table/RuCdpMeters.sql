@@ -1,13 +1,11 @@
 ﻿/****** Object:  Table [dbo].[RuCdpMeters]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[RuCdpMeters](
+CREATE TABLE dbo.RuCdpMeters(
 	[RuCdpMeters_Id] [decimal](18, 0) IDENTITY(1,1) NOT NULL,
 	[RuCdpMeters_MeterId] [decimal](10, 0) NOT NULL,
 	[RuCDPDetail_CdpId] [varchar](100) NOT NULL,
 	[RuCdpMeters_DeviceName] [varchar](100) NULL,
-	[RuCdpMeters_Status] [varchar](10) NULL,
+	[RuCdpMeters_Status] [varchar](100) NULL,
 	[RuCdpMeters_MeterNo] [decimal](18, 0) NULL,
 	[RuCdpMeters_MeterQualifier] [varchar](200) NULL,
 	[RuCdpMeters_MeterModelType] [varchar](200) NULL,
@@ -23,7 +21,7 @@ CREATE TABLE [dbo].[RuCdpMeters](
 	[RuCdpMeters_ModifiedBy] [decimal](18, 0) NULL,
 	[RuCdpMeters_ModifiedOn] [datetime] NULL,
 	[RuCdpMeters_IsDeleted] [datetime] NULL,
-PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK__RuCdpMet__0594C43935030F1F] PRIMARY KEY CLUSTERED 
 (
 	[RuCdpMeters_Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]

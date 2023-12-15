@@ -1,10 +1,11 @@
 ﻿/****** Object:  Procedure [dbo].[SaveBMESettlementOutputs]    Committed by VersionSQL https://www.versionsql.com ******/
 
-CREATE   Procedure [dbo].[SaveBMESettlementOutputs]  
+CREATE   Procedure dbo.SaveBMESettlementOutputs  
   
  @p_settlementProcessId decimal(18,0),  
  @p_settlementProcessMonth int,  
- @p_settlementProcessYear int    
+ @p_settlementProcessYear INT,
+ @pUserId INT
 AS  
 BEGIN  
  ------[dbo].[BMEContractedAmounts_SettlementProcess]  
@@ -161,7 +162,8 @@ BEGIN
   [BmeStatementData_IsLegacy],  
   [BmeStatementData_EnergySuppliedImported],  
   [BmeStatementData_CongestedZoneID],  
-  BmeStatementData_CongestedZone,  
+  BmeStatementData_CongestedZone,
+  BmeStatementData_IsActualGenerationUnit,
   [BmeStatementData_StatementProcessId],  
   [BmeStatementData_SettlementProcessId]  
  )  
@@ -211,6 +213,7 @@ BEGIN
   [BmeStatementData_EnergySuppliedImported],  
   [BmeStatementData_CongestedZoneID],  
   BmeStatementData_CongestedZone,  
+  BmeStatementData_IsActualGenerationUnit,
   [BmeStatementData_StatementProcessId],  
   @p_settlementProcessId  
  FROM   
@@ -392,8 +395,162 @@ BEGIN
   AND BmeStatementData_Month = @p_settlementProcessMonth  
   AND BmeStatementData_StatementProcessId=@p_settlementProcessId  
 ------ [dbo].[BmeStatementDataMpCategoryHourly_SettlementProcess]  
-   
-  
+   	INSERT INTO [dbo].[BmeStatementDataMpCategoryHourly_SettlementProcess]
+	(
+		[BmeStatementData_NtdcDateTime],
+		[BmeStatementData_Year],
+		[BmeStatementData_Month],
+		[BmeStatementData_Day],
+		[BmeStatementData_Hour],
+		[BmeStatementData_AdjustedEnergy],
+		[BmeStatementData_TransmissionLosses],
+		[BmeStatementData_DemandedEnergy],
+		[BmeStatementData_UpliftTransmissionLosses],
+		[BmeStatementData_ActualEnergy],
+		[BmeStatementData_EnergySuppliedActual],
+		[BmeStatementData_EnergySuppliedGenerated],
+		[BmeStatementData_EnergySuppliedImport],
+		[BmeStatementData_PartyRegisteration_Id],
+		[BmeStatementData_PartyName],
+		[BmeStatementData_PartyType_Code],
+		[BmeStatementData_PartyCategory_Code],
+		[BmeStatementData_AdjustedEnergyImport],
+		[BmeStatementData_AdjustedEnergyExport],
+		[BmeStatementData_EnergySuppliedGeneratedLegacy],
+		[BmeStatementData_EnergySuppliedImportedLegacy],
+		[BmeStatementData_CAPLegacy],
+		[BmeStatementData_EnergySuppliedImported],
+		[BmeStatementData_ActualCapacity],
+		[BmeStatementData_EnergyTradedBought],
+		[BmeStatementData_EnergyTradedSold],
+		[BmeStatementData_EnergyTraded],
+		[BmeStatementData_Imbalance],
+		[BmeStatementData_ImbalanceCharges],
+		[BmeStatementData_MarginalPrice],
+		[BmeStatementData_BSUPRatioPP],
+		[BmeStatementData_IsPowerPool],
+		[BmeStatementData_CongestedZoneID],
+        [BmeStatementData_CongestedZone],
+		[BmeStatementData_ES],
+		[BmeStatementData_MAC],
+		[BmeStatementData_IG_AC],
+		[BmeStatementData_RG_AC],
+		[BmeStatementData_GS_SC],
+		[BmeStatementData_GBS_BSC],
+		[BmeStatementData_TAC],
+		[BmeStatementData_MRC],
+		[BmeStatementData_TC],
+		[BmeStatementData_StatementProcessId],
+		[BmeStatementData_SettlementProcessId]
+	)
+	SELECT
+		[BmeStatementData_NtdcDateTime],
+		[BmeStatementData_Year],
+		[BmeStatementData_Month],
+		[BmeStatementData_Day],
+		[BmeStatementData_Hour],
+		[BmeStatementData_AdjustedEnergy],
+		[BmeStatementData_TransmissionLosses],
+		[BmeStatementData_DemandedEnergy],
+		[BmeStatementData_UpliftTransmissionLosses],
+		[BmeStatementData_ActualEnergy],
+		[BmeStatementData_EnergySuppliedActual],
+		[BmeStatementData_EnergySuppliedGenerated],
+		[BmeStatementData_EnergySuppliedImport],
+		[BmeStatementData_PartyRegisteration_Id],
+		[BmeStatementData_PartyName],
+		[BmeStatementData_PartyType_Code],
+		[BmeStatementData_PartyCategory_Code],
+		[BmeStatementData_AdjustedEnergyImport],
+		[BmeStatementData_AdjustedEnergyExport],
+		[BmeStatementData_EnergySuppliedGeneratedLegacy],
+		[BmeStatementData_EnergySuppliedImportedLegacy],
+		[BmeStatementData_CAPLegacy],
+		[BmeStatementData_EnergySuppliedImported],
+		[BmeStatementData_ActualCapacity],
+		[BmeStatementData_EnergyTradedBought],
+		[BmeStatementData_EnergyTradedSold],
+		[BmeStatementData_EnergyTraded],
+		[BmeStatementData_Imbalance],
+		[BmeStatementData_ImbalanceCharges],
+		[BmeStatementData_MarginalPrice],
+		[BmeStatementData_BSUPRatioPP],
+		[BmeStatementData_IsPowerPool],
+		[BmeStatementData_CongestedZoneID],
+        [BmeStatementData_CongestedZone],
+		[BmeStatementData_ES],
+		[BmeStatementData_MAC],
+		[BmeStatementData_IG_AC],
+		[BmeStatementData_RG_AC],
+		[BmeStatementData_GS_SC],
+		[BmeStatementData_GBS_BSC],
+		[BmeStatementData_TAC],
+		[BmeStatementData_MRC],
+		[BmeStatementData_TC],
+		[BmeStatementData_StatementProcessId],
+		@p_settlementProcessId
+	FROM 
+		BmeStatementDataMpCategoryHourly
+	WHERE
+		BmeStatementData_Year = @p_settlementProcessYear
+		AND BmeStatementData_Month = @p_settlementProcessMonth
+		AND BmeStatementData_StatementProcessId=@p_settlementProcessId
+
+------ [dbo].[BmeStatementDataMpCategoryMonthly_SettlementProcess]
+	INSERT INTO [dbo].[BmeStatementDataMpCategoryMonthly_SettlementProcess]
+	(
+		[BmeStatementData_Year],
+		[BmeStatementData_Month],
+		[BmeStatementData_EnergySuppliedActual],
+		[BmeStatementData_PartyRegisteration_Id],
+		[BmeStatementData_PartyName],
+		[BmeStatementData_PartyType_Code],
+		[BmeStatementData_PartyCategory_Code],
+		[BmeStatementData_IsPowerPool],
+		[BmeStatementData_CongestedZoneID],
+        [BmeStatementData_CongestedZone],
+		[BmeStatementData_ES],
+		[BmeStatementData_MAC],
+		[BmeStatementData_IG_AC],
+		[BmeStatementData_RG_AC],
+		[BmeStatementData_GS_SC],
+		[BmeStatementData_GBS_BSC],
+		[BmeStatementData_TAC],
+		[BmeStatementData_MRC],
+		[BmeStatementData_TC],
+		[BmeStatementData_StatementProcessId],
+		[BmeStatementData_SettlementProcessId]
+	)
+	SELECT
+		[BmeStatementData_Year],
+		[BmeStatementData_Month],
+		[BmeStatementData_EnergySuppliedActual],
+		[BmeStatementData_PartyRegisteration_Id],
+		[BmeStatementData_PartyName],
+		[BmeStatementData_PartyType_Code],
+		[BmeStatementData_PartyCategory_Code],
+		[BmeStatementData_IsPowerPool],
+		[BmeStatementData_CongestedZoneID],
+        [BmeStatementData_CongestedZone],
+		[BmeStatementData_ES],
+		[BmeStatementData_MAC],
+		[BmeStatementData_IG_AC],
+		[BmeStatementData_RG_AC],
+		[BmeStatementData_GS_SC],
+		[BmeStatementData_GBS_BSC],
+		[BmeStatementData_TAC],
+		[BmeStatementData_MRC],
+		[BmeStatementData_TC],
+		[BmeStatementData_StatementProcessId],
+		@p_settlementProcessId
+	FROM 
+		BmeStatementDataMpCategoryMonthly
+	WHERE
+		BmeStatementData_Year = @p_settlementProcessYear
+		AND BmeStatementData_Month = @p_settlementProcessMonth
+		AND BmeStatementData_StatementProcessId=@p_settlementProcessId
+
+
 ------ [dbo].[BmeStatementDataMpContractHourly_SettlementProcess]  
  INSERT INTO [dbo].[BmeStatementDataMpContractHourly_SettlementProcess]  
  (  
@@ -643,7 +800,8 @@ INSERT INTO [dbo].[BmeStatementDataGenUnitHourly_SettlementProcess]
            ,[BmeStatementData_UnitWiseGeneration_Metered]
            ,[BmeStatementData_UnitWiseGenerationBackFeed_Metered]
            ,[BmeStatementData_IsBackfeedInclude]
-           ,[BmeStatementData_StatementProcessId])
+           ,[BmeStatementData_StatementProcessId]
+		   ,BmeStatementData_CalculatedAvailableCapacityASCSum)
      
 	  SELECT 
 	        [BmeStatementData_NtdcDateTime]
@@ -674,19 +832,53 @@ INSERT INTO [dbo].[BmeStatementDataGenUnitHourly_SettlementProcess]
            ,[BmeStatementData_UnitWiseGenerationBackFeed_Metered]
            ,[BmeStatementData_IsBackfeedInclude]
            ,[BmeStatementData_StatementProcessId]
+		   ,BmeStatementData_CalculatedAvailableCapacityASCSum
 		FROM  [dbo].[BmeStatementDataGenUnitHourly]
 		WHERE   BmeStatementData_Year = @p_settlementProcessYear  
      AND BmeStatementData_Month = @p_settlementProcessMonth  
     AND BmeStatementData_StatementProcessId=@p_settlementProcessId 
 
 
-/**/  
-UPDATE MtBvmReading  
-SET IsAlreadyUsedInBME =1  
-FROM MtBvmReading  
-WHERE DATEPART(YEAR, MtBvmReading_ReadingDate) = @p_settlementProcessYear  
-AND DATEPART(MONTH, MtBvmReading_ReadingDate) = @p_settlementProcessMonth  
+
+ /*****************************************************************************************************
+	UPDATED  on 17 august 2023
+	Task Id: 3653 , MMS\Support - Change Requests
+	short detail: ESS only works if some new data found, so on rollback we mush update metering data.	
+ ******************************************************************************************************/
+ 
+IF EXISTS(
+	SELECT PD.SrStatementDef_ID FROM MtStatementProcess SP
+	JOIN SrProcessDef PD ON PD.SrProcessDef_ID=SP.SrProcessDef_ID
+	WHERE SP.MtStatementProcess_ID=@p_settlementProcessId--209
+	AND  PD.SrStatementDef_ID=3--ESS
+	)
+	BEGIN
+		UPDATE MtBvmReading  
+		SET IsAlreadyUsedInBME =2 -- 2 means USED IN ESS   
+		FROM MtBvmReading  
+		WHERE DATEPART(YEAR, MtBvmReading_ReadingDate) = @p_settlementProcessYear  
+		AND DATEPART(MONTH, MtBvmReading_ReadingDate) = @p_settlementProcessMonth  
+		AND IsAlreadyUsedInBME=0
+	END
+	ELSE
+	BEGIN
+		UPDATE MtBvmReading  
+		SET IsAlreadyUsedInBME =1  -- 1 means used in FSS|PSS
+		FROM MtBvmReading  
+		WHERE DATEPART(YEAR, MtBvmReading_ReadingDate) = @p_settlementProcessYear  
+		AND DATEPART(MONTH, MtBvmReading_ReadingDate) = @p_settlementProcessMonth  
+		AND IsAlreadyUsedInBME=0
+   END
+
+ 
+
+ /*****************************************************************************************************
+   Clear temp data after move  them into operations tables so that we have fast calculations
+ ******************************************************************************************************/
    
-  
+
+   EXECUTE RemoveBMEandASCDataFromTempTables @p_settlementProcessYear, @p_settlementProcessMonth , @p_settlementProcessId,@pUserId 
+    
+
 return @@rowcount;  
 END  

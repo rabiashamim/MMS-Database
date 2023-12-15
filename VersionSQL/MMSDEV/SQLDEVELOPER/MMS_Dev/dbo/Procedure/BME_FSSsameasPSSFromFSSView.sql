@@ -4,13 +4,12 @@
 --  [dbo].[BME_FSSsameasPSS] 3  
 -- Delete from MtStatementProcess  where SrProcessDef_ID=4  
   
-CREATE PROCEDURE [dbo].[BME_FSSsameasPSSFromFSSView]  
+CREATE PROCEDURE dbo.BME_FSSsameasPSSFromFSSView  
 @pPSSsettlementProcessId decimal  
 ,@pFSSsettlementProcessId decimal  
 AS  
 BEGIN  
-  update MtStatementProcess set MtStatementProcess_Status='Executed', MtStatementProcess_ApprovalStatus='Executed', MtStatementProcess_ExecutionStartDate=DATEADD(hour,5,GETUTCDATE()), MtStatementProcess_ExecutionFinishDate=Dateadd(hour,5,GETUTCDATE()) where MtStatementProcess_ID=@pFSSsettlementProcessId;
-  
+
 --INSERT INTO [dbo].[BMEInputsSOFilesVersions]  
 --           ([SettlementProcessId]  
 --           ,[SOFileTemplateId]  
@@ -237,7 +236,8 @@ insert into [dbo].[BmeStatementDataMpHourly_SettlementProcess]
  ,[BmeStatementData_ImbalanceCharges]  
  ,[BmeStatementData_MarginalPrice]  
  ,[BmeStatementData_BSUPRatioPP]  
- ,[BmeStatementData_StatementProcessId]  
+ ,[BmeStatementData_StatementProcessId] 
+ ,[BmeStatementData_ActualEnergy_Metered]
 )  
   
 select   
@@ -272,6 +272,7 @@ select
  ,[BmeStatementData_MarginalPrice]  
  ,[BmeStatementData_BSUPRatioPP]  
  ,@pFSSsettlementProcessId
+ ,BmeStatementData_ActualEnergy_Metered
 from [dbo].[BmeStatementDataMpHourly_SettlementProcess] where BmeStatementData_StatementProcessId=@pPSSsettlementProcessId  
   
  ------4 end----  
@@ -510,7 +511,73 @@ select
 		   where [BmeStatementData_StatementProcessId]=@pPSSsettlementProcessId
 -------------------------------  
   
-  
+--------Insert into BmeStatementDataGenUnitHourly table  
+
+INSERT INTO [dbo].[BmeStatementDataGenUnitHourly_SettlementProcess]
+           ([BmeStatementData_NtdcDateTime]
+           ,[BmeStatementData_Year]
+           ,[BmeStatementData_Month]
+           ,[BmeStatementData_Day]
+           ,[BmeStatementData_Hour]
+           ,[BmeStatementData_MtGenerator_Id]
+           ,[BmeStatementData_MtGeneratorUnit_Id]
+           ,[BmeStatementData_SOUnitId]
+           ,[SrTechnologyType_Code]
+           ,[BmeStatementData_InstalledCapacity_KW]
+           ,[BmeStatementData_IncEnergyExport]
+           ,[BmeStatementData_IncEnergyImport]
+           ,[BmeStatementData_AdjustedEnergyExport]
+           ,[BmeStatementData_AdjustedEnergyImport]
+           ,[BmeStatementData_GenerationUnitEnergy]
+           ,[BmeStatementData_GenerationUnitWiseBackfeed]
+           ,[BmeStatementData_GenerationUnitEnergy_Metered]
+           ,[BmeStatementData_GenerationUnitWiseBackfeed_Metered]
+           ,[BmeStatementData_AvailableCapacityASC]
+           ,[BmeStatementData_CalculatedAvailableCapacityASC]
+           ,[BmeStatementData_ActualCapacity]
+           ,[BmeStatementData_GenCapacity]
+           ,[BmeStatementData_UnitWiseGeneration]
+           ,[BmeStatementData_UnitWiseGenerationBackFeed]
+           ,[BmeStatementData_UnitWiseGeneration_Metered]
+           ,[BmeStatementData_UnitWiseGenerationBackFeed_Metered]
+           ,[BmeStatementData_IsBackfeedInclude]
+           ,[BmeStatementData_StatementProcessId])
+SELECT  
+           [BmeStatementData_NtdcDateTime]
+           ,[BmeStatementData_Year]
+           ,[BmeStatementData_Month]
+           ,[BmeStatementData_Day]
+           ,[BmeStatementData_Hour]
+           ,[BmeStatementData_MtGenerator_Id]
+           ,[BmeStatementData_MtGeneratorUnit_Id]
+           ,[BmeStatementData_SOUnitId]
+           ,[SrTechnologyType_Code]
+           ,[BmeStatementData_InstalledCapacity_KW]
+           ,[BmeStatementData_IncEnergyExport]
+           ,[BmeStatementData_IncEnergyImport]
+           ,[BmeStatementData_AdjustedEnergyExport]
+           ,[BmeStatementData_AdjustedEnergyImport]
+           ,[BmeStatementData_GenerationUnitEnergy]
+           ,[BmeStatementData_GenerationUnitWiseBackfeed]
+           ,[BmeStatementData_GenerationUnitEnergy_Metered]
+           ,[BmeStatementData_GenerationUnitWiseBackfeed_Metered]
+           ,[BmeStatementData_AvailableCapacityASC]
+           ,[BmeStatementData_CalculatedAvailableCapacityASC]
+           ,[BmeStatementData_ActualCapacity]
+           ,[BmeStatementData_GenCapacity]
+           ,[BmeStatementData_UnitWiseGeneration]
+           ,[BmeStatementData_UnitWiseGenerationBackFeed]
+           ,[BmeStatementData_UnitWiseGeneration_Metered]
+           ,[BmeStatementData_UnitWiseGenerationBackFeed_Metered]
+           ,[BmeStatementData_IsBackfeedInclude]
+           ,@pFSSsettlementProcessId 
+FROM 
+[dbo].[BmeStatementDataGenUnitHourly_SettlementProcess]
+
+WHERE   BmeStatementData_StatementProcessId=@pPSSsettlementProcessId
+
+
+-------------------------------  
 INSERT INTO [dbo].[MtStatementProcessSteps]  
            ([MtStatementProcessSteps_Status]  
            ,[MtStatementProcessSteps_Description]  
@@ -528,6 +595,8 @@ INSERT INTO [dbo].[MtStatementProcessSteps]
            ,MPS.MtStatementProcessSteps_CreatedOn  
      from   
     [dbo].[MtStatementProcessSteps] MPS where MPS.MtStatementProcess_ID=@pPSSsettlementProcessId  
+
+
 ------------------------  
 --Insert into LOGS table  
   
@@ -553,5 +622,11 @@ INSERT INTO [dbo].[MtSattlementProcessLogs]
 --	 delete from [dbo].[MtSattlementProcessLogs] where MtStatementProcess_ID=@pPSSsettlementProcessId and MtSattlementProcessLog_ID=(
 --	 select max(MtSattlementProcessLog_ID) from [dbo].[MtSattlementProcessLogs] where MtStatementProcess_ID=@pPSSsettlementProcessId
 --	 )
+
+
+
+
+  update MtStatementProcess set MtStatementProcess_Status='Executed', MtStatementProcess_ApprovalStatus='Draft', MtStatementProcess_ExecutionStartDate=DATEADD(hour,5,GETUTCDATE()), MtStatementProcess_ExecutionFinishDate=Dateadd(hour,5,GETUTCDATE()) where MtStatementProcess_ID=@pFSSsettlementProcessId;
+  
 select 1;
 END  

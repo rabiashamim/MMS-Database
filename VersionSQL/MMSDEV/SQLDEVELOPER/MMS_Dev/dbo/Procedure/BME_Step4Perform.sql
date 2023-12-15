@@ -6,7 +6,7 @@
 -- Description:	<Description,,>
 -- =============================================
 -- [BME_Step4Perform]  2022,6,18
-CREATE   Procedure [dbo].[BME_Step4Perform](			 
+CREATE PROCEDURE dbo.BME_Step4Perform(			 
 			@Year int,
 			@Month int
 			,@StatementProcessId decimal(18,0)
@@ -426,7 +426,7 @@ AND DH.BmeStatementData_Month=@Month
 ------------------------------------------------------------------------
 UPDATE BmeStatementDataHourly
 SET BmeStatementData_TransmissionLosses=CDP.BmeStatementData_TransmissionLosses, 
-BmeStatementData_UpliftTransmissionLosses=cast(CDP.BmeStatementData_TransmissionLosses as decimal(38,32))/NULLIF(DH.BmeStatementData_DemandedEnergy,0) 
+BmeStatementData_UpliftTransmissionLosses=cast(CDP.BmeStatementData_TransmissionLosses as DECIMAL(25,13))/NULLIF(DH.BmeStatementData_DemandedEnergy,0) 
 from BmeStatementDataHourly DH
 
 INNER JOIN (

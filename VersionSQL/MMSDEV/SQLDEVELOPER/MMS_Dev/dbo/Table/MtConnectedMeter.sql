@@ -1,8 +1,6 @@
 ﻿/****** Object:  Table [dbo].[MtConnectedMeter]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[MtConnectedMeter](
+CREATE TABLE dbo.MtConnectedMeter(
 	[MtConnectedMeter_Id] [decimal](18, 0) NOT NULL,
 	[MtPartyCategory_Id] [decimal](18, 0) NOT NULL,
 	[MtCDPDetail_Id] [decimal](18, 0) NOT NULL,
@@ -30,12 +28,47 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 
-ALTER TABLE [dbo].[MtConnectedMeter] ADD  DEFAULT ((0)) FOR [MtConnectedMeter_isDeleted]
-ALTER TABLE [dbo].[MtConnectedMeter]  WITH NOCHECK ADD FOREIGN KEY([MtPartyCategory_Id])
+ALTER TABLE dbo.MtConnectedMeter ADD  DEFAULT ((0)) FOR [MtConnectedMeter_isDeleted]
+ALTER TABLE dbo.MtConnectedMeter  WITH NOCHECK ADD FOREIGN KEY([MtPartyCategory_Id])
 REFERENCES [dbo].[MtPartyCategory] ([MtPartyCategory_Id])
-ALTER TABLE [dbo].[MtConnectedMeter]  WITH CHECK ADD FOREIGN KEY([MtPartyCategory_Id_TaxZone])
+ALTER TABLE dbo.MtConnectedMeter  WITH CHECK ADD FOREIGN KEY([MtPartyCategory_Id_TaxZone])
 REFERENCES [dbo].[MtPartyCategory] ([MtPartyCategory_Id])
-ALTER TABLE [dbo].[MtConnectedMeter]  WITH CHECK ADD FOREIGN KEY([MtPartyCategory_Id_FromCustomer])
+ALTER TABLE dbo.MtConnectedMeter  WITH CHECK ADD FOREIGN KEY([MtPartyCategory_Id_FromCustomer])
 REFERENCES [dbo].[MtPartyCategory] ([MtPartyCategory_Id])
-ALTER TABLE [dbo].[MtConnectedMeter]  WITH CHECK ADD FOREIGN KEY([MtPartyCategory_Id_ToCustomer])
+ALTER TABLE dbo.MtConnectedMeter  WITH CHECK ADD FOREIGN KEY([MtPartyCategory_Id_ToCustomer])
 REFERENCES [dbo].[MtPartyCategory] ([MtPartyCategory_Id])
+CREATE TRIGGER [dbo].[audittrg_MtConnectedMeter]
+ON dbo.MtConnectedMeter
+AFTER UPDATE
+AS
+BEGIN
+
+	SET NOCOUNT ON;
+	INSERT INTO MtConnectedMeter_audit (MtConnectedMeter_Id, MtPartyCategory_Id, MtCDPDetail_Id, MtPartyCategory_Id_TaxZone, MtPartyCategory_Id_FromCustomer, MtPartyCategory_Id_ToCustomer, MtConnectedMeter_CongestionZone, MtConnectedMeter_FactorDetails, MtConnectedMeter_EffectiveFrom, MtConnectedMeter_EffectiveTo, MtConnectedMeter_CreatedBy, MtConnectedMeter_CreatedOn, MtConnectedMeter_ModifiedBy, MtConnectedMeter_ModifiedOn, MtConnectedMeter_ConnectedFrom, MtConnectedMeter_ConnectedTo, MtConnectedMeter_UnitId, IsAssigned, CongestedZone_Id, TaxZone_Id, MtConnectedMeter_isDeleted, updated_at, operation)
+		SELECT
+			MtConnectedMeter_Id
+		   ,MtPartyCategory_Id
+		   ,MtCDPDetail_Id
+		   ,MtPartyCategory_Id_TaxZone
+		   ,MtPartyCategory_Id_FromCustomer
+		   ,MtPartyCategory_Id_ToCustomer
+		   ,MtConnectedMeter_CongestionZone
+		   ,MtConnectedMeter_FactorDetails
+		   ,MtConnectedMeter_EffectiveFrom
+		   ,MtConnectedMeter_EffectiveTo
+		   ,MtConnectedMeter_CreatedBy
+		   ,MtConnectedMeter_CreatedOn
+		   ,MtConnectedMeter_ModifiedBy
+		   ,MtConnectedMeter_ModifiedOn
+		   ,MtConnectedMeter_ConnectedFrom
+		   ,MtConnectedMeter_ConnectedTo
+		   ,MtConnectedMeter_UnitId
+		   ,IsAssigned
+		   ,CongestedZone_Id
+		   ,TaxZone_Id
+		   ,MtConnectedMeter_isDeleted
+		   ,GETDATE()
+		   ,'ALT'
+		FROM DELETED d;
+END
+ALTER TABLE dbo.MtConnectedMeter ENABLE TRIGGER [audittrg_MtConnectedMeter]

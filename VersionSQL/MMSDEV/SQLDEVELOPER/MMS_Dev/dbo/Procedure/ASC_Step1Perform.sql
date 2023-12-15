@@ -10,8 +10,8 @@
 --              
 -- Parameters: @Year, @Month, @StatementProcessId  
 -- =============================================  
---    [dbo].[ASC_Step1Perform] 2022,6,21
-CREATE   PROCEDURE [dbo].[ASC_Step1Perform](			 
+--    dbo.ASC_Step1Perform 2022,6,21
+CREATE   PROCEDURE dbo.ASC_Step1Perform(			 
 			@Year int,
 			@Month int
 			,@StatementProcessId decimal(18,0)
@@ -321,7 +321,7 @@ UPDATE [AscStatementDataGuHourly]
 UPDATE [AscStatementDataGuHourly] 
 	set 
 	AscStatementData_SO_IG_VC = ISNULL(AD.MtAscIG_VariableCost,0)
-    , AscStatementData_SO_IG_EPG = ISNULL(AD.EnergyProduceIfNoAncillaryServices,0)
+    , AscStatementData_SO_IG_EPG = ISNULL(NULLIF(AD.EnergyProduceIfNoAncillaryServices,''),0)
     ,AscStatementData_IsIG=1
 	FROM [AscStatementDataGuHourly]  as GH
 	INNER JOIN MtAscIG AD 

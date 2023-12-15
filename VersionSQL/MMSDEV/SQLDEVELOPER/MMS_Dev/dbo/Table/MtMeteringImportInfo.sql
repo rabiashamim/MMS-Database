@@ -1,8 +1,6 @@
 ﻿/****** Object:  Table [dbo].[MtMeteringImportInfo]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[MtMeteringImportInfo](
+CREATE TABLE dbo.MtMeteringImportInfo(
 	[MtMeteringImportInfo_Id] [decimal](18, 0) NOT NULL,
 	[MtMeteringImportInfo_ImportInMMSDate] [datetime] NULL,
 	[MtMeteringImportInfo_BatchNo] [int] NULL,
@@ -12,6 +10,10 @@ CREATE TABLE [dbo].[MtMeteringImportInfo](
 	[MtMeteringImportInfo_CreatedOn] [datetime] NOT NULL,
 	[MtMeteringImportInfo_ModifiedBy] [decimal](18, 0) NULL,
 	[MtMeteringImportInfo_ModifiedOn] [datetime] NULL,
+	[MtMeteringImportInfo_TotalActiveCDPs] [decimal](18, 0) NULL,
+	[MtMeteringImportInfo_TotalCDPs] [decimal](18, 0) NULL,
+	[MtMeteringImportInfo_ConnectedCDPs] [decimal](18, 0) NULL,
+	[MtMeteringImportInfo_BVMRecords] [decimal](18, 0) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[MtMeteringImportInfo_Id] ASC

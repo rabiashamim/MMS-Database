@@ -9,7 +9,7 @@
 -- Parameters: @Year, @Month, @StatementProcessId
 -- ============================================= 
 --    [dbo].[ASC_Step1Perform] 2021,11
-CREATE   Procedure [dbo].[ASC_StepBPerform](			 
+CREATE   Proceduredbo.ASC_StepBPerform(			 
 			@Year int,
 			@Month int
 			,@StatementProcessId decimal(18,0)
@@ -22,34 +22,36 @@ BEGIN TRY
 DECLARE @BmeStatementProcessId decimal(18,0) = null;
 SELECT top 1 @BmeStatementProcessId = dbo.[GetBMEtatementProcessIdFromASC] (@StatementProcessId);
 
-   IF EXISTS(SELECT TOP 1 BmeStatementData_Id FROM BmeStatementDataMpCategoryHourly WHERE  BmeStatementData_Year=@Year and BmeStatementData_Month=@Month 
+   IF EXISTS(SELECT TOP 1 BmeStatementData_Id FROM BmeStatementDataMpCategoryHourly_SettlementProcess  WHERE  BmeStatementData_Year=@Year and BmeStatementData_Month=@Month 
    and BmeStatementData_StatementProcessId=@BmeStatementProcessId
    )
    BEGIN
- 
+ /***Task id 3933**/
 
-UPDATE BmeStatementDataMpCategoryHourly
+UPDATE BmeStatementDataMpCategoryHourly_SettlementProcess
 SET 
-BmeStatementData_ES=NULLIF(MH.BmeStatementData_EnergySuppliedActual,0) - ISNULL(MH.BmeStatementData_EnergyTradedBought,0)
-FROM BmeStatementDataMpCategoryHourly MH 
+BmeStatementData_ES=--MH.BmeStatementData_EnergyTraded
+NULLIF(MH.BmeStatementData_EnergySuppliedActual,0) - ISNULL(MH.BmeStatementData_EnergyTradedBought,0)
+FROM BmeStatementDataMpCategoryHourly_SettlementProcess MH 
 where MH.BmeStatementData_Year=@Year and MH.BmeStatementData_Month=@Month 
 and MH.BmeStatementData_StatementProcessId=@BmeStatementProcessId
 and MH.BmeStatementData_PartyCategory_Code in ('CGEN','GEN','BPC','EGEN','EBPC');
+--------------------------------------------------------
 
- UPDATE BmeStatementDataMpCategoryHourly
+ UPDATE BmeStatementDataMpCategoryHourly_SettlementProcess
 SET 
-BmeStatementData_ES=MH.BmeStatementData_EnergySuppliedActual 
-FROM BmeStatementDataMpCategoryHourly MH 
+/*Task Id 3933*/
+--BmeStatementData_ES=MH.BmeStatementData_EnergySuppliedActual 
+BmeStatementData_ES=ISNULL(MH.BmeStatementData_EnergyTraded,0)
+FROM BmeStatementDataMpCategoryHourly_SettlementProcess MH 
 where MH.BmeStatementData_Year=@Year and MH.BmeStatementData_Month=@Month 
 and MH.BmeStatementData_StatementProcessId=@BmeStatementProcessId
 and MH.BmeStatementData_PartyCategory_Code in ('BSUP','PAKT','INTT');
-
------------------------------------------------
-  
- UPDATE BmeStatementDataMpCategoryHourly
+-----------------------------------------------  
+ UPDATE BmeStatementDataMpCategoryHourly_SettlementProcess
 SET 
 BmeStatementData_ES=ISNULL(MH.BmeStatementData_EnergySuppliedActual,0) + ISNULL(MH.BmeStatementData_EnergyTradedSold,0)
-FROM BmeStatementDataMpCategoryHourly MH 
+FROM BmeStatementDataMpCategoryHourly_SettlementProcess MH 
 where MH.BmeStatementData_Year=@Year and MH.BmeStatementData_Month=@Month 
 and MH.BmeStatementData_StatementProcessId=@BmeStatementProcessId
 and MH.BmeStatementData_PartyCategory_Code in ('CSUP');
@@ -63,8 +65,10 @@ AscStatementData_TD=MCM.BmeStatementData_TD
 FROM AscStatementDataZoneMonthly GH 
 JOIN (
    SELECT MCM.BmeStatementData_StatementProcessId, MCM.BmeStatementData_CongestedZoneID,MCM.BmeStatementData_Year, MCM.BmeStatementData_Month
-   ,sum(MCM.BmeStatementData_ES)as BmeStatementData_TD
-   FROM BmeStatementDataMpCategoryHourly MCM
+  ,sum(MCM.BmeStatementData_EnergySuppliedActual) as BmeStatementData_TD
+  -- TaskId: 4062
+  -- ,sum(MCM.BmeStatementData_ES)as BmeStatementData_TD
+   FROM BmeStatementDataMpCategoryHourly_SettlementProcess MCM
    where MCM.BmeStatementData_Year=@Year and MCM.BmeStatementData_Month=@Month   
   and MCM.BmeStatementData_StatementProcessId=@BmeStatementProcessId
    and MCM.BmeStatementData_PartyCategory_Code in ('CGEN','GEN','BPC','EGEN','EBPC','CSUP','BSUP','PAKT','INTT')   

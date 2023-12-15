@@ -7,7 +7,7 @@
 --Comments : ADD Modules
 --======================================================================
 -- AddModules @pModuleName= 'BME4' ,@Modules_Id=0,@Module_IsActive=1
-CREATE PROCEDURE [dbo].[AddModules]
+CREATE PROCEDURE dbo.AddModules
 @pModuleName varchar(100),
 @Modules_Id INT,
 @Module_IsActive BIT
@@ -63,5 +63,5 @@ INSERT INTO [dbo].[AspNetRoles] VALUES
 INSERT INTO [dbo].[AspNetRoles] VALUES
 (NEWID(),@pModuleName+'_Approval',@vModuleId,4)
 
--- testing commnet
+
 END

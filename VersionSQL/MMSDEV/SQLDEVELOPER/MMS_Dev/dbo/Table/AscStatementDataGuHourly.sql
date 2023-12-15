@@ -1,8 +1,6 @@
 ﻿/****** Object:  Table [dbo].[AscStatementDataGuHourly]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[AscStatementDataGuHourly](
+CREATE TABLE dbo.AscStatementDataGuHourly(
 	[AscStatementData_Id] [decimal](18, 0) IDENTITY(1,1) NOT NULL,
 	[AscStatementData_NtdcDateTime] [datetime] NOT NULL,
 	[AscStatementData_Year] [int] NOT NULL,
@@ -62,6 +60,8 @@ CREATE TABLE [dbo].[AscStatementDataGuHourly](
 	[AscStatementData_MR_UPC] [decimal](25, 13) NULL,
 	[AscStatementData_StatementProcessId] [decimal](18, 0) NOT NULL,
 	[AscStatementData_CongestedZone] [nvarchar](50) NULL,
+	[AscStatementData_RG_AC_WithNegativeValues] [decimal](25, 13) NULL,
+	[AscStatementData_AC_total_WithNegativeValues] [decimal](25, 13) NULL,
  CONSTRAINT [PK_AscStatementDataGuHourly] PRIMARY KEY CLUSTERED 
 (
 	[AscStatementData_NtdcDateTime] ASC,

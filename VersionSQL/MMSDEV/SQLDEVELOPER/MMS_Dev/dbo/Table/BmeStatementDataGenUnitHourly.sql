@@ -1,8 +1,6 @@
 ﻿/****** Object:  Table [dbo].[BmeStatementDataGenUnitHourly]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[BmeStatementDataGenUnitHourly](
+CREATE TABLE dbo.BmeStatementDataGenUnitHourly(
 	[BmeStatementData_Id] [decimal](18, 0) IDENTITY(1,1) NOT NULL,
 	[BmeStatementData_NtdcDateTime] [datetime] NOT NULL,
 	[BmeStatementData_Year] [int] NOT NULL,
@@ -32,6 +30,8 @@ CREATE TABLE [dbo].[BmeStatementDataGenUnitHourly](
 	[BmeStatementData_UnitWiseGenerationBackFeed_Metered] [decimal](20, 4) NULL,
 	[BmeStatementData_IsBackfeedInclude] [bit] NULL,
 	[BmeStatementData_StatementProcessId] [decimal](18, 0) NOT NULL,
+	[MtAvailibilityData_AvailableCapacityASCSum] [decimal](30, 18) NULL,
+	[BmeStatementData_CalculatedAvailableCapacityASCSum] [decimal](20, 4) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[BmeStatementData_Id] ASC

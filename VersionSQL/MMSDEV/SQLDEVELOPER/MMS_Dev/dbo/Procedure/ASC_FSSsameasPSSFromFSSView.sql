@@ -4,13 +4,19 @@
 --  [dbo].[BME_FSSsameasPSS] 3  
 -- Delete from MtStatementProcess  where SrProcessDef_ID=4  
   
-CREATE PROCEDURE [dbo].[ASC_FSSsameasPSSFromFSSView]  
+CREATE PROCEDURE dbo.ASC_FSSsameasPSSFromFSSView  
 @pPSSsettlementProcessId decimal  
 ,@pFSSsettlementProcessId decimal  
 AS  
 BEGIN  
-  update MtStatementProcess set MtStatementProcess_Status='Executed', MtStatementProcess_ApprovalStatus='Executed', MtStatementProcess_ExecutionStartDate=DATEADD(hour,5,GETUTCDATE()), MtStatementProcess_ExecutionFinishDate=Dateadd(hour,5,GETUTCDATE()) where MtStatementProcess_ID=@pFSSsettlementProcessId;
-  
+
+Declare @BmePssSettlementProcessId decimal  
+,@BmeFssSettlementProcessId decimal  
+ 
+ Set @BmePssSettlementProcessId=dbo.GetBMEtatementProcessIdFromASC(@pPSSsettlementProcessId);
+Set @BmeFssSettlementProcessId=dbo.GetBMEtatementProcessIdFromASC(@pFSSsettlementProcessId);
+
+
 --INSERT INTO [dbo].[BMEInputsSOFilesVersions]  
 --           ([SettlementProcessId]  
 --           ,[SOFileTemplateId]  
@@ -24,8 +30,9 @@ BEGIN
   join [BMEInputsSOFilesVersions] versionPSS on versionFSS.SOFileTemplateId
 =versionPSS.SOFileTemplateId
   where versionFSS.SettlementProcessId=@pFSSsettlementProcessId and versionPSS.SettlementProcessId=@pPSSsettlementProcessId
-  
+ 
 --------------------------------------------------------------------\  
+DELETE from [dbo].[BmeStatementDataMpCategoryHourly_SettlementProcess] where BmeStatementData_StatementProcessId=@BmePssSettlementProcessId  ;
 	INSERT INTO [dbo].[BmeStatementDataMpCategoryHourly_SettlementProcess]
 	(
 		[BmeStatementData_NtdcDateTime],
@@ -117,11 +124,13 @@ BEGIN
 		[BmeStatementData_TAC],
 		[BmeStatementData_MRC],
 		[BmeStatementData_TC],
-		@pFSSsettlementProcessId,
-		@pFSSsettlementProcessId
-		From [dbo].[BmeStatementDataMpCategoryHourly_SettlementProcess] where BmeStatementData_StatementProcessId=@pPSSsettlementProcessId  
+		@BmeFssSettlementProcessId,
+		@BmeFssSettlementProcessId
+		From [dbo].[BmeStatementDataMpCategoryHourly_SettlementProcess] where BmeStatementData_StatementProcessId=@BmePssSettlementProcessId  
 
 		---------------------------------------------
+		DELETE from [dbo].[BmeStatementDataMpCategoryMonthly_SettlementProcess] where BmeStatementData_StatementProcessId=@BmePssSettlementProcessId  ;
+
 			INSERT INTO [dbo].[BmeStatementDataMpCategoryMonthly_SettlementProcess]
 	(
 		[BmeStatementData_Year],
@@ -164,10 +173,10 @@ BEGIN
 		[BmeStatementData_TAC],
 		[BmeStatementData_MRC],
 		[BmeStatementData_TC],
-		@pFSSsettlementProcessId,
-		@pFSSsettlementProcessId
-	from [dbo].[BmeStatementDataMpCategoryMonthly_SettlementProcess] where BmeStatementData_StatementProcessId=@pPSSsettlementProcessId
-
+		@BmeFssSettlementProcessId,
+		@BmeFssSettlementProcessId
+	from [dbo].[BmeStatementDataMpCategoryMonthly_SettlementProcess] where BmeStatementData_StatementProcessId=@BmePssSettlementProcessId
+	
 	-------------------------------------------------------------
 INSERT INTO [dbo].[AscStatementDataCdpGuParty_SettlementProcess]
 (
@@ -568,6 +577,7 @@ INSERT INTO [dbo].[AscStatementDataMpZoneMonthly_SettlementProcess]
 (
 	[AscStatementData_Year]
 	,[AscStatementData_Month]
+	,[AscStatementData_CongestedZone]
 	,[AscStatementData_CongestedZoneID]
 	,[AscStatementData_PartyRegisteration_Id]
 	,[AscStatementData_PartyName]
@@ -587,6 +597,7 @@ INSERT INTO [dbo].[AscStatementDataMpZoneMonthly_SettlementProcess]
 Select
 	[AscStatementData_Year]
 	,[AscStatementData_Month]
+	,[AscStatementData_CongestedZone]
 	,[AscStatementData_CongestedZoneID]
 	,[AscStatementData_PartyRegisteration_Id]
 	,[AscStatementData_PartyName]
@@ -732,7 +743,7 @@ INSERT INTO [dbo].[MtStatementProcessSteps]
      ,MPS.MtStatementProcessSteps_Description  
            ,@pFSSsettlementProcessId
            --,[RuStepDef_ID]  
-     , (select RSD2.RuStepDef_ID from RuStepDef RSD2 where RSD2.SrProcessDef_ID=5 and RSD2.RuStepDef_BMEStepNo=(select RSD1.RuStepDef_BMEStepNo from RuStepDef RSD1 where RSD1.RuStepDef_ID=MPS.RuStepDef_ID))  
+     , (select RSD2.RuStepDef_ID from RuStepDef RSD2 where RSD2.SrProcessDef_ID=5 and RSD2.RuStepDef_BMEStepNo=(select RSD1.RuStepDef_BMEStepNo from RuStepDef RSD1 where RSD1.RuStepDef_ID=MPS.RuStepDef_ID and ISNULL(RSD1.RuStepDef_IsDeleted,0)=0) and isnull(RSD2.RuStepDef_IsDeleted,0)=0)   
            ,MPS.MtStatementProcessSteps_CreatedBy  
            ,MPS.MtStatementProcessSteps_CreatedOn  
      from   
@@ -763,5 +774,8 @@ INSERT INTO [dbo].[MtSattlementProcessLogs]
 --	 delete from [dbo].[MtSattlementProcessLogs] where MtStatementProcess_ID=@pPSSsettlementProcessId and MtSattlementProcessLog_ID=(
 --	 select max(MtSattlementProcessLog_ID) from [dbo].[MtSattlementProcessLogs] where MtStatementProcess_ID=@pPSSsettlementProcessId
 --	 )
+
+ update MtStatementProcess set MtStatementProcess_Status='Executed', MtStatementProcess_ApprovalStatus='Draft', MtStatementProcess_ExecutionStartDate=DATEADD(hour,5,GETUTCDATE()), MtStatementProcess_ExecutionFinishDate=Dateadd(hour,5,GETUTCDATE()) where MtStatementProcess_ID=@pFSSsettlementProcessId;
+  
 	Select 1;
 END  

@@ -1,8 +1,7 @@
 ﻿/****** Object:  Procedure [dbo].[GETCDPDetails]    Committed by VersionSQL https://www.versionsql.com ******/
 
 --  GETCDPDetails 723    
-CREATE PROCEDURE [dbo].[GETCDPDetails]    
-@pPartyId decimal(18,0)    
+CREATE PROCEDURE dbo.GETCDPDetails      
 AS    
 BEGIN    
   

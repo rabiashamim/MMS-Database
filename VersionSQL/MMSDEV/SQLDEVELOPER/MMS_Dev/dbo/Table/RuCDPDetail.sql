@@ -1,8 +1,6 @@
 ﻿/****** Object:  Table [dbo].[RuCDPDetail]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[RuCDPDetail](
+CREATE TABLE dbo.RuCDPDetail(
 	[RuCDPDetail_Id] [decimal](18, 0) IDENTITY(1,1) NOT NULL,
 	[RuCDPDetail_CdpId] [varchar](100) NOT NULL,
 	[RuCDPDetail_CdpName] [varchar](50) NULL,
@@ -32,10 +30,92 @@ CREATE TABLE [dbo].[RuCDPDetail](
 	[RuCDPDetail_ConnectedFromCategoryID] [decimal](18, 0) NULL,
 	[RuCDPDetail_ConnectedToCategoryID] [decimal](18, 0) NULL,
 	[IsBackfeedInclude] [bit] NOT NULL,
-PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK__RuCDPDet__C429E13834D1EE9F] PRIMARY KEY CLUSTERED 
 (
 	[RuCDPDetail_Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 
-ALTER TABLE [dbo].[RuCDPDetail] ADD  DEFAULT ((1)) FOR [IsBackfeedInclude]
+ALTER TABLE dbo.RuCDPDetail ADD  CONSTRAINT [DF__RuCDPDeta__IsBac__6F605B11]  DEFAULT ((1)) FOR [IsBackfeedInclude]
+
+CREATE TRIGGER [dbo].[audittrg_RuCDPDetail] ON dbo.RuCDPDetail
+AFTER UPDATE
+AS
+BEGIN
+
+SET NOCOUNT ON;
+
+INSERT INTO [dbo].[RuCDPDetail_audit]
+           (  
+            [RuCDPDetail_Id]
+           ,[RuCDPDetail_CdpId]
+           ,[RuCDPDetail_CdpName]
+           ,[RuCDPDetail_CdpStatus]
+           ,[RuCDPDetail_ToCustomer]
+           ,[RuCDPDetail_FromCustomer]
+           ,[IsAssigned]
+           ,[RuCDPDetail_LineVoltage]
+           ,[RuCDPDetail_Station]
+           ,[RuCDPDetail_EffectiveFrom]
+           ,[RuCDPDetail_EffectiveTo]
+           ,[RuCDPDetail_CreatedDateTime]
+           ,[RuCDPDetail_UpdatedDateTime]
+           ,[RuCDPDetail_CreatedBy]
+           ,[RuCDPDetail_CreatedOn]
+           ,[RuCDPDetail_ModifiedBy]
+           ,[RuCDPDetail_ModifiedOn]
+           ,[RuCDPDetail_ConnectedFromID]
+           ,[RuCDPDetail_ConnectedToID]
+           ,[RuCDPDetail_EffectiveFromIPP]
+           ,[RuCDPDetail_EffectiveToIPP]
+           ,[RuCDPDetail_IsEnergyImported]
+           ,[RuCDPDetail_TaxZoneID]
+           ,[RuCDPDetail_CongestedZoneID]
+           ,[RuCDPDetail_ToCustomerCategory]
+           ,[RuCDPDetail_FromCustomerCategory]
+           ,[RuCDPDetail_ConnectedFromCategoryID]
+           ,[RuCDPDetail_ConnectedToCategoryID]
+           ,[IsBackfeedInclude]
+           ,[updated_at]
+           ,[operation]
+		   )
+      SELECT
+         
+            [RuCDPDetail_Id]
+           ,[RuCDPDetail_CdpId]
+           ,[RuCDPDetail_CdpName]
+           ,[RuCDPDetail_CdpStatus]
+           ,[RuCDPDetail_ToCustomer]
+           ,[RuCDPDetail_FromCustomer]
+           ,[IsAssigned]
+           ,[RuCDPDetail_LineVoltage]
+           ,[RuCDPDetail_Station]
+           ,[RuCDPDetail_EffectiveFrom]
+           ,[RuCDPDetail_EffectiveTo]
+           ,[RuCDPDetail_CreatedDateTime]
+           ,[RuCDPDetail_UpdatedDateTime]
+           ,[RuCDPDetail_CreatedBy]
+           ,[RuCDPDetail_CreatedOn]
+           ,[RuCDPDetail_ModifiedBy]
+           ,[RuCDPDetail_ModifiedOn]
+           ,[RuCDPDetail_ConnectedFromID]
+           ,[RuCDPDetail_ConnectedToID]
+           ,[RuCDPDetail_EffectiveFromIPP]
+           ,[RuCDPDetail_EffectiveToIPP]
+           ,[RuCDPDetail_IsEnergyImported]
+           ,[RuCDPDetail_TaxZoneID]
+           ,[RuCDPDetail_CongestedZoneID]
+           ,[RuCDPDetail_ToCustomerCategory]
+           ,[RuCDPDetail_FromCustomerCategory]
+           ,[RuCDPDetail_ConnectedFromCategoryID]
+           ,[RuCDPDetail_ConnectedToCategoryID]
+           ,[IsBackfeedInclude]
+           ,GETDATE()
+           ,'ALT'
+    FROM
+        inserted i
+   
+END
+   
+
+ALTER TABLE dbo.RuCDPDetail ENABLE TRIGGER [audittrg_RuCDPDetail]

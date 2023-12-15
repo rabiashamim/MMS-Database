@@ -3,7 +3,7 @@
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-CREATE procedure WF_InsertDetails
+CREATE procedure dbo.WF_InsertDetails
     @RuWorkFlowHeader_id int = null,
     @RuWorkFlowHeader_name nvarchar(256),
     @RuWorkFlowHeader_description nvarchar(256),
@@ -18,7 +18,7 @@ begin
     (
         RuWorkFlowHeader_name,
         RuWorkFlowHeader_description,
-        RuModules_id,
+        RuModulesProcess_Id,
         RuWorkFlowHeader_CreatedBy,
         RuWorkFlowHeader_CreatedOn
     )

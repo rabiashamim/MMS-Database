@@ -8,7 +8,7 @@
 --              
 -- Parameters: @Year, @Month, @StatementProcessId
 -- ============================================= 
-CREATE   Procedure [dbo].[BME_Step7APerform]
+CREATE   PROCEDURE dbo.BME_Step7APerform
 @Year int,
 @Month int
 ,@StatementProcessId decimal(18,0)
@@ -116,7 +116,7 @@ AND MCH.BmeStatementData_StatementProcessId =@StatementProcessId
 AND MPH.BmeStatementData_StatementProcessId =@StatementProcessId
 --AND DH.BmeStatementData_Day = 1
 --AND DH.BmeStatementData_Hour = 1
-AND MCH.BmeStatementData_ContractId=1111
+AND MCH.BmeStatementData_ContractId=21
 AND MPH.BmeStatementData_PartyRegisteration_Id=12;
 
 -----
@@ -162,7 +162,7 @@ AND MPH.BmeStatementData_PartyRegisteration_Id=MCH.BmeStatementData_BuyerPartyRe
 WHERE
  MCH.BmeStatementData_StatementProcessId =@StatementProcessId
 AND MPH.BmeStatementData_StatementProcessId =@StatementProcessId
-AND MCH.BmeStatementData_ContractId=1111
+--AND MCH.BmeStatementData_ContractId=1111
 AND MPH.BmeStatementData_PartyRegisteration_Id=12;
 
 
@@ -416,23 +416,31 @@ then  con.BmeStatementData_ActualEnergy*ISNULL((1 + H.BmeStatementData_UpliftTra
 case when con.BmeStatementData_CapQuantity>0
 THEN
 	case when con.BmeStatementData_CapQuantity>H.BmeStatementData_EnergySuppliedActual
+
     then  H.BmeStatementData_EnergySuppliedActual
 	ELSE con.BmeStatementData_CapQuantity end
 
 ELSE
-
-case when H.BmeStatementData_CAPLegacy>H.BmeStatementData_EnergySuppliedActual
-then  H.BmeStatementData_EnergySuppliedActual
+/*
+*task Id : 3775 updated date: 13 sep 2023
+*/ 
+--case when H.BmeStatementData_CAPLegacy>H.BmeStatementData_EnergySuppliedActual
+case when H.BmeStatementData_CAPLegacy>
+	H.BmeStatementData_EnergySuppliedActual-ISNULL(H.BmeStatementData_EnergySuppliedGenerated,0)
+	-ISNULL(H.BmeStatementData_EnergySuppliedImported,0)
+then  H.BmeStatementData_EnergySuppliedActual -ISNULL(H.BmeStatementData_EnergySuppliedGenerated,0)
+	-ISNULL(H.BmeStatementData_EnergySuppliedImported,0)
 
 ELSE H.BmeStatementData_CAPLegacy end
 END
 ,0) as EnergyTradedSold
 INTO #TempEnergyTradedSold
- FROM BmeStatementDataMpHourly H
+	 FROM BmeStatementDataMpHourly H
 	INNER JOIN  ActualEnergy_CTE as con 
 	on H.BmeStatementData_PartyRegisteration_Id=con.BmeStatementData_BuyerPartyRegisteration_Id 
 	and H.BmeStatementData_NtdcDateTime = con.BmeStatementData_NtdcDateTime
-WHERE H.BmeStatementData_Year = @Year and H.BmeStatementData_Month =  @Month and H.BmeStatementData_StatementProcessId=@StatementProcessId
+WHERE H.BmeStatementData_Year = @Year and H.BmeStatementData_Month =  @Month 
+and H.BmeStatementData_StatementProcessId=@StatementProcessId
 ;		
 
 -------------------------------------
@@ -490,8 +498,16 @@ con.BmeStatementData_ContractId,
 
 case when con.BmeStatementData_CapQuantity>0
 THEN
-	case when con.BmeStatementData_CapQuantity>MH.BmeStatementData_EnergySuppliedActual--con.EnergyTradedSold
-    then  MH.BmeStatementData_EnergySuppliedActual
+/*
+*task Id : 3775 updated date: 13 sep 2023
+*/ 
+	--case when con.BmeStatementData_CapQuantity>MH.BmeStatementData_EnergySuppliedActual
+	case when con.BmeStatementData_CapQuantity>
+	MH.BmeStatementData_EnergySuppliedActual-ISNULL(MH.BmeStatementData_EnergySuppliedGenerated,0)
+	-ISNULL(MH.BmeStatementData_EnergySuppliedImported,0)
+    then  MH.BmeStatementData_EnergySuppliedActual-ISNULL(MH.BmeStatementData_EnergySuppliedGenerated,0)
+	-ISNULL(MH.BmeStatementData_EnergySuppliedImported,0)
+
 	ELSE con.BmeStatementData_CapQuantity end
 
 ELSE

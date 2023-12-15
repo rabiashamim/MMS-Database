@@ -9,7 +9,7 @@
 -- Parameters: @Year, @Month, @StatementProcessId
 -- ============================================= 
 --    [dbo].[ASC_Step1Perform] 2021,11
-CREATE   Procedure [dbo].[ASC_Step5Perform](			 
+CREATE   Proceduredbo.ASC_Step5Perform(			 
 			@Year int,
 			@Month int
 			,@StatementProcessId decimal(18,0)
@@ -82,7 +82,7 @@ GUH.AscStatementData_Year=@Year and GUH.AscStatementData_Month=@Month and GUH.As
 UPDATE AscStatementDataGuHourly SET
 AscStatementData_IG_EAG=BGUH.BmeStatementData_UnitWiseGeneration
 from AscStatementDataGuHourly GUH 
-INNER JOIN [BmeStatementDataGenUnitHourly] BGUH 
+INNER JOIN [BmeStatementDataGenUnitHourly_SettlementProcess]  BGUH 
          ON BGUH.BmeStatementData_MtGeneratorUnit_Id = GUH.AscStatementData_GenerationUnit_Id
 		AND BGUH.BmeStatementData_NtdcDateTime = GUH.AscStatementData_NtdcDateTime 
 	    AND BGUH.BmeStatementData_StatementProcessId=@BmeStatementProcessId

@@ -1,8 +1,6 @@
 ﻿/****** Object:  Table [dbo].[BmeStatementDataMpCategoryHourly]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[BmeStatementDataMpCategoryHourly](
+CREATE TABLE dbo.BmeStatementDataMpCategoryHourly(
 	[BmeStatementData_Id] [decimal](18, 0) IDENTITY(1,1) NOT NULL,
 	[BmeStatementData_NtdcDateTime] [datetime] NOT NULL,
 	[BmeStatementData_Year] [int] NOT NULL,
@@ -48,6 +46,7 @@ CREATE TABLE [dbo].[BmeStatementDataMpCategoryHourly](
 	[BmeStatementData_TC] [decimal](25, 13) NULL,
 	[BmeStatementData_StatementProcessId] [decimal](18, 0) NOT NULL,
 	[BmeStatementData_CongestedZone] [nvarchar](50) NULL,
+	[BmeStatementData_ActualEnergy_Metered] [decimal](25, 13) NULL,
  CONSTRAINT [PK_BmeStatementDataMpCategoryHourly] PRIMARY KEY CLUSTERED 
 (
 	[BmeStatementData_NtdcDateTime] ASC,

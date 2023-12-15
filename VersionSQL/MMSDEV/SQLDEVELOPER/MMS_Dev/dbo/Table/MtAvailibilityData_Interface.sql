@@ -1,8 +1,6 @@
 ﻿/****** Object:  Table [dbo].[MtAvailibilityData_Interface]    Committed by VersionSQL https://www.versionsql.com ******/
 
-SET ANSI_NULLS ON
-SET QUOTED_IDENTIFIER ON
-CREATE TABLE [dbo].[MtAvailibilityData_Interface](
+CREATE TABLE dbo.MtAvailibilityData_Interface(
 	[MtAvailibilityData_Id] [decimal](18, 0) IDENTITY(1,1) NOT NULL,
 	[MtAvailibilityData_RowNumber] [bigint] NOT NULL,
 	[MtSOFileMaster_Id] [decimal](18, 0) NOT NULL,
@@ -18,6 +16,8 @@ CREATE TABLE [dbo].[MtAvailibilityData_Interface](
 	[MtAvailibilityData_ModifiedBy] [int] NULL,
 	[MtAvailibilityData_ModifiedOn] [datetime] NULL,
 	[MtAvailibilityData_IsDeleted] [bit] NULL,
+	[MtAvailibilityData_GeneratingCapacity] [nvarchar](max) NULL,
+	[MtAvailibilityData_SyncStatus] [nvarchar](max) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[MtAvailibilityData_Id] ASC

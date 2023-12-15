@@ -1,9 +1,6 @@
 ﻿/****** Object:  Procedure [dbo].[Insert_BilateralContractData_Interface]    Committed by VersionSQL https://www.versionsql.com ******/
 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-CREATE PROCEDURE [dbo].[Insert_BilateralContractData_Interface]
+CREATE   PROCEDURE dbo.Insert_BilateralContractData_Interface
 	@fileMasterId decimal(18,0),
 	@UserId Int,
     @tblBilateralContractData [dbo].[MtBilateralContract_UDT_Interface] READONLY
@@ -67,19 +64,20 @@ BEGIN TRY
 		,@userID
 		,GETUTCDATE()
 		,0
-		,  CASE WHEN [MtBilateralContract_ContractType]='Generation Following' THEN 1     
-          WHEN [MtBilateralContract_ContractType]='Load Following' THEN 2     
-          WHEN [MtBilateralContract_ContractType]='Fixed' THEN 3     
-          WHEN [MtBilateralContract_ContractType]='Customized' THEN 4 
+		,  CASE WHEN [MtBilateralContract_ContractType] in ('Generation Following','Generation Following Supply Contract')  THEN 1     
+          WHEN [MtBilateralContract_ContractType] in ('Load Following','Load Following Supply Contract') THEN 2     
+          WHEN [MtBilateralContract_ContractType] in ('Fixed Quantity','Financial Supply Contract with Fixed Quantities') THEN 3     
+          WHEN [MtBilateralContract_ContractType] in ('Customized','Customized Contract')  THEN 4 
+		  WHEN [MtBilateralContract_ContractType]='Capacity and Associated Energy Supply Contract' THEN 5 
 		  else 0
   END    
   ,  
-  CASE WHEN  [MtBilateralContract_ContractType]='Load Following' and (ISNULL([MtBilateralContract_DistributionLosses],'')<>'' ) and  (ISNULL([MtBilateralContract_TransmissionLoss],'')='') then 23  
-    WHEN  [MtBilateralContract_ContractType]='Load Following' and (ISNULL([MtBilateralContract_DistributionLosses],'')= '') and  (ISNULL([MtBilateralContract_TransmissionLoss],'')<>'') then 22  
-    WHEN  [MtBilateralContract_ContractType]='Load Following' and (ISNULL([MtBilateralContract_DistributionLosses],'')= '') and  (ISNULL([MtBilateralContract_TransmissionLoss],'') ='') then 21  
-      WHEN  [MtBilateralContract_ContractType]='Customized' and ISNULL([MtBilateralContract_DistributionLosses],'') <> '' and  ISNULL([MtBilateralContract_TransmissionLoss],'') <>  ''  then 41  
-      WHEN  [MtBilateralContract_ContractType]='Customized' and ((ISNULL([MtBilateralContract_DistributionLosses],'') ='' ) or  (ISNULL([MtBilateralContract_TransmissionLoss],'') ='' ))then 42  
-	  WHEN [MtBilateralContract_ContractType]='Fixed' or [MtBilateralContract_ContractType]='Generation Following' then 0
+  CASE WHEN  [MtBilateralContract_ContractType] in ('Load Following','Load Following Supply Contract') and (ISNULL([MtBilateralContract_DistributionLosses],'')<>'' ) and  (ISNULL([MtBilateralContract_TransmissionLoss],'')='') then 23  
+    WHEN  [MtBilateralContract_ContractType] in ('Load Following','Load Following Supply Contract') and (ISNULL([MtBilateralContract_DistributionLosses],'')= '') and  (ISNULL([MtBilateralContract_TransmissionLoss],'')<>'') then 22  
+    WHEN  [MtBilateralContract_ContractType] in ('Load Following','Load Following Supply Contract') and (ISNULL([MtBilateralContract_DistributionLosses],'')= '') and  (ISNULL([MtBilateralContract_TransmissionLoss],'') ='') then 21  
+    WHEN  [MtBilateralContract_ContractType] in ('Customized','Customized Contract')  and ISNULL([MtBilateralContract_DistributionLosses],'') <> '' and  ISNULL([MtBilateralContract_TransmissionLoss],'') <>  ''  then 41  
+    WHEN  [MtBilateralContract_ContractType] in ('Customized','Customized Contract')  and ((ISNULL([MtBilateralContract_DistributionLosses],'') ='' ) or  (ISNULL([MtBilateralContract_TransmissionLoss],'') ='' ))then 42  
+	WHEN [MtBilateralContract_ContractType]='Financial Supply Contract with Fixed Quantities' or [MtBilateralContract_ContractType] in ('Generation Following','Generation Following Supply Contract')  then 0
   END  
   ,[BuyerSrCategory_Code]
   ,[SellerSrCategory_Code]

@@ -9,7 +9,7 @@
 --GO
 
 
-CREATE PROCEDURE [dbo].[Insert_MarginalPrice]
+CREATE PROCEDURE dbo.Insert_MarginalPrice
 	@fileMasterId decimal(18,0),
 	@UserId Int,
    @tblMarginalPrice [dbo].[MtMarginalPrice_UDT] READONLY
@@ -42,4 +42,27 @@ BEGIN
 	 ,GETUTCDATE()
 	 ,0
 	FROM @tblMarginalPrice
+
+	 --declare @version int=0;
+		-- select @version=MtSOFileMaster_Version from MtSOFileMaster where MtSOFileMaster_Id=@fileMasterId
+
+		--  declare @period int=0;
+		--  select @period =LuAccountingMonth_Id from MtSOFileMaster where MtSOFileMaster_Id=@fileMasterId
+
+		--  declare @pSOFileTemplate int=0;
+		--  select @pSOFileTemplate=LuSOFileTemplate_Id from MtSOFileMaster where MtSOFileMaster_Id=@fileMasterId
+
+		--  declare @tempname NVARCHAR(MAX)=NULL;
+		--  SELECT @tempname=LuSOFileTemplate_Name FROM LuSOFileTemplate WHERE  LuSOFileTemplate_Id=@pSOFileTemplate
+
+		--  declare @output VARCHAR(max);
+		--	SET @output= @tempname+'submitted for approval. Settlement Period:' +convert(varchar(max),@period) +',Version:' + convert(varchar(max),@version) 
+
+		--		EXEC [dbo].[SystemLogs] 
+		--		@user=@UserId,
+		--		 @moduleName='Data Management',  
+		--		 @CrudOperationName='Create',  
+		--		 @logMessage=@output 
+
+
 END
