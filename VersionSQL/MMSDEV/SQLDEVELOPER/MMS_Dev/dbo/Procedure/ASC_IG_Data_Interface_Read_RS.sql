@@ -4,9 +4,9 @@
   
   
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- ---Author: Abdul Wahab
+ ---Author: Abdul Wahab is gone again
   
-CREATE PROCEDURE [dbo].[ASC_IG_Data_Interface_Read_RS]     
+CREATE PROCEDURE dbo.ASC_IG_Data_Interface_Read_RS     
   
   @pMtSOFileMaster_Id DECIMAL(18, 0)  
 , @pPageNumber INT  
